@@ -10,4 +10,6 @@ const XP_SEL = {
   cellInner: '[data-testid="cellInnerDiv"]',
   sidebar: '[data-testid="sidebarColumn"]',
   primaryColumn: '[data-testid="primaryColumn"]',
+  cashtag: '[data-testid="tweetText"] a[href*="cashtag_click"]',
+  mention: '[data-testid="tweetText"] a[href^="/"]',
 };

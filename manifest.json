@@ -8,18 +8,42 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage"],
-  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://query1.finance.yahoo.com/*",
+    "https://financialmodelingprep.com/*",
+    "https://api.fxtwitter.com/*"
+  ],
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "X Polish"
   },
   "content_scripts": [
     {
-      "matches": ["https://x.com/*", "https://twitter.com/*"],
-      "css": ["src/styles/base.css", "src/styles/tweets.css"],
-      "js": ["src/settings.js", "src/content/selectors.js", "src/content/content.js"],
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "css": [
+        "src/styles/base.css",
+        "src/styles/tweets.css",
+        "src/styles/chips.css"
+      ],
+      "js": [
+        "src/settings.js",
+        "src/content/selectors.js",
+        "src/content/api.js",
+        "src/content/chips.js",
+        "src/content/content.js"
+      ],
       "run_at": "document_start"
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  }
 }

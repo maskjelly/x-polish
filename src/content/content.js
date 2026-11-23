@@ -26,12 +26,26 @@
     if (isPromoted) tweet.closest(XP_SEL.cellInner)?.classList.add("xp-promoted");
 
     if (tweet.querySelector(XP_SEL.media)) tweet.classList.add("xp-has-media");
+
+    xpApi.harvestAuthor(tweet);
   }
+
+  // ---- Enhancers -------------------------------------------------------------
+  // Each enhancer runs on every matching element as it appears. Each `run`
+  // must be idempotent: X re-renders nodes and we may see them again.
+  const ENHANCERS = [
+    { selector: XP_SEL.tweet, run: processTweet },
+    { selector: XP_SEL.cashtag, run: xpChips.cashtag },
+    { selector: XP_SEL.mention, run: xpChips.mention },
+  ];
 
   function scan(node = document) {
     if (node.nodeType !== 1 && node !== document) return;
-    if (node.matches?.(XP_SEL.tweet)) processTweet(node);
-    node.querySelectorAll?.(XP_SEL.tweet).forEach(processTweet);
+    if (node.classList?.contains("xp-chip-inner") || node.classList?.contains("xp-orig")) return;
+    for (const { selector, run } of ENHANCERS) {
+      if (node.matches?.(selector)) run(node);
+      node.querySelectorAll?.(selector).forEach(run);
+    }
   }
 
   // X is a SPA with infinite scroll: watch for new nodes and batch per frame.

@@ -16,13 +16,17 @@ After editing files, hit the reload icon on the extension card and refresh x.com
 ```
 manifest.json
 src/
+  background.js        network requests + caching (quotes, logos, profiles)
   settings.js          toggle list + defaults (shared by popup and content script)
   content/
     selectors.js       stable X selectors (data-testid), all in one place
+    api.js             content-side data layer (messages background, harvests on-page profiles)
+    chips.js           $cashtag and @mention badges
     content.js         applies settings as <html> classes, tags tweets as they load
   styles/
     base.css           design tokens (radius, colors, fonts) + layout tweaks
     tweets.css         tweet styling
+    chips.css          badge styling
   popup/               toolbar popup, built from settings.js
 icons/
 ```
@@ -33,6 +37,15 @@ icons/
   under those classes, so toggling is instant and needs no reload.
 - Each tweet gets `.xp-tweet` (plus `.xp-has-media`, and its cell gets `.xp-promoted` when it's an ad).
   Per-tweet JS goes in `processTweet()` in `content.js`.
+
+## Badges
+
+- `$TICKER` becomes a round pill with logo, ticker and live price (green up / red down, hover for % change).
+  Prices: Yahoo Finance (falls back to `TICKER-USD` for crypto). Logos: financialmodelingprep.
+- `@user` becomes a square chip with avatar, display name and verified badge (blue / gold / grey).
+  Profiles come from tweets already on the page first, otherwise from api.fxtwitter.com.
+- All network calls go through `src/background.js` (x.com's CSP blocks them from the page) and are cached:
+  prices 1 min, profiles 6 h, logos 7 days.
 
 ## Adding a feature
 
