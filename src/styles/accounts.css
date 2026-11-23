@@ -1,1 +1,68 @@
-/* accounts feature styles */
+/* ==========================================================================
+   Account age & bot signals.
+   Small flat tags after the handle on posts; one compact secondary line on
+   profile pages. Flat, no gloss, readable in light, dim and lights-out.
+   ========================================================================== */
+
+:root {
+  --xp-acct-ink: #536471;
+  --xp-new-fg: #9a5b00;
+  --xp-new-bg: rgba(217, 119, 6, 0.1);
+  --xp-new-border: rgba(217, 119, 6, 0.28);
+  --xp-bot-fg: #b42318;
+  --xp-bot-bg: rgba(220, 38, 38, 0.07);
+  --xp-bot-border: rgba(220, 38, 38, 0.24);
+}
+:root.xp-dark {
+  --xp-acct-ink: #8b98a5;
+  --xp-new-fg: #f2b45a;
+  --xp-new-bg: rgba(245, 158, 11, 0.12);
+  --xp-new-border: rgba(245, 158, 11, 0.3);
+  --xp-bot-fg: #f39a9a;
+  --xp-bot-bg: rgba(248, 113, 113, 0.1);
+  --xp-bot-border: rgba(248, 113, 113, 0.28);
+}
+
+.xp-acct-tag,
+.xp-acct-line { display: none; }
+
+/* ---- Tag after the handle on posts ---------------------------------------- */
+:root.xp-accountAge .xp-acct-tag {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  flex-shrink: 0;           /* the handle truncates first; the tag stays whole */
+  box-sizing: border-box;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 5px;
+  border: 1px solid var(--xp-new-border);
+  background: var(--xp-new-bg);
+  color: var(--xp-new-fg);
+  font: 600 11.5px/1 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: help;
+}
+:root.xp-accountAge .xp-acct-tag[data-kind="bot"] {
+  border-color: var(--xp-bot-border);
+  background: var(--xp-bot-bg);
+  color: var(--xp-bot-fg);
+}
+
+/* ---- Profile line ----------------------------------------------------------- */
+:root.xp-accountAge .xp-acct-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 6px;
+  margin-top: 6px;
+  color: var(--xp-acct-ink);
+  font: 400 14px/20px "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.xp-acct-line > span[title] { cursor: help; }
+.xp-acct-sep::before { content: "·"; opacity: 0.7; }
+:root.xp-accountAge .xp-acct-line .xp-acct-tag { margin-left: 2px; }
