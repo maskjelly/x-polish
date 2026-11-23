@@ -34,7 +34,8 @@
         "src/styles/chips.css",
         "src/styles/hovercard.css",
         "src/styles/surfaces.css",
-        "src/styles/people.css"
+        "src/styles/people.css",
+        "src/styles/notif-summary.css"
       ],
       "js": [
         "src/settings.js",
@@ -49,6 +50,7 @@
         "src/content/surfaces.js",
         "src/content/label-editor.js",
         "src/content/people.js",
+        "src/content/notif-summary.js",
         "src/content/content.js"
       ],
       "run_at": "document_start"

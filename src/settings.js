@@ -11,9 +11,11 @@ const XP_SETTINGS = [
   { key: "profileCards",   label: "Polished profile cards",   default: true },
   { key: "sidebarPanels",  label: "Polished sidebar boxes",   default: true },
   { key: "composerPolish", label: "Polished post composer",   default: true },
+  { key: "notifSummary",   label: "Notifications 24h summary", default: true },
   { key: "notifPolish",    label: "Polished notifications",   default: true },
   { key: "betterType",     label: "Nicer typography",         default: false },
   { key: "hideMetrics",    label: "Hide view counts",         default: false },
+  { key: "sponsoredRing",  label: "Gold ring on sponsored posts", default: true },
   { key: "blockAds",       label: "Block ads (Promoted)",     default: true },
   { key: "hideSidebar",    label: "Hide right sidebar",       default: false },
 ];

@@ -82,6 +82,7 @@
     requestAnimationFrame(() => {
       scheduled = false;
       xpSurfaces.updateRoute(); // SPA navigation shows up as DOM changes
+      xpNotifSummary.ensure();
       const nodes = pending;
       pending = new Set();
       nodes.forEach((n) => n.isConnected && scan(n));

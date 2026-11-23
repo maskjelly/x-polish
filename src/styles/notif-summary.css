@@ -1,0 +1,181 @@
+/* ==========================================================================
+   Notifications: "Last 24 hours" summary panel.
+   Flat surface, neutral ink for all text and numbers; colour only marks
+   which activity a tile is about (icon + bars). Palette validated for
+   colour-vision deficiency in both themes (order: like, follow, repost, reply).
+   ========================================================================== */
+
+:root {
+  --xp-ns-like: #e0156f;
+  --xp-ns-follow: #1a8cd8;
+  --xp-ns-repost: #00865a;
+  --xp-ns-reply: #6b4ce6;
+  --xp-ns-ink: #0f1419;
+  --xp-ns-ink-2: #536471;
+  --xp-ns-line: rgba(15, 20, 25, 0.1);
+  --xp-ns-fill: rgba(15, 20, 25, 0.02);
+  --xp-ns-tile: rgba(15, 20, 25, 0.03);
+  --xp-ns-track: rgba(15, 20, 25, 0.07);
+  --xp-ns-tip-bg: #0f1419;
+  --xp-ns-tip-fg: #fff;
+  --xp-ns-page: #fff;
+}
+:root.xp-dark {
+  --xp-ns-like: #f91880;
+  --xp-ns-follow: #1d9bf0;
+  --xp-ns-repost: #00a36c;
+  --xp-ns-reply: #7856ff;
+  --xp-ns-ink: #e7e9ea;
+  --xp-ns-ink-2: #71767b;
+  --xp-ns-line: rgba(255, 255, 255, 0.1);
+  --xp-ns-fill: rgba(255, 255, 255, 0.025);
+  --xp-ns-tile: rgba(255, 255, 255, 0.035);
+  --xp-ns-track: rgba(255, 255, 255, 0.08);
+  --xp-ns-tip-bg: #e7e9ea;
+  --xp-ns-tip-fg: #0f1419;
+  --xp-ns-page: #000;
+}
+
+.xp-ns { display: none; }
+:root.xp-notifSummary .xp-ns {
+  display: block;
+  position: relative;
+  container-type: inline-size;
+  margin: 12px 12px 6px;
+  padding: 16px;
+  border: 1px solid var(--xp-ns-line);
+  border-radius: 18px;
+  background: var(--xp-ns-fill);
+  color: var(--xp-ns-ink);
+  font: 15px/1.3 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.xp-ns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---- Header ---------------------------------------------------------------- */
+.xp-ns-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.xp-ns-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.xp-ns-eyebrow {
+  color: var(--xp-ns-ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.xp-ns-headline { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+.xp-ns-headline b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.xp-ns-empty .xp-ns-headline { color: var(--xp-ns-ink-2); font-size: 15px; }
+.xp-ns-meta { display: flex; align-items: center; gap: 8px; color: var(--xp-ns-ink-2); font-size: 13px; white-space: nowrap; padding-top: 2px; }
+.xp-ns-toggle {
+  display: grid; place-items: center;
+  width: 28px; height: 28px; border: 0; border-radius: 8px;
+  background: transparent; color: var(--xp-ns-ink-2); cursor: pointer;
+}
+.xp-ns-toggle:hover { background: var(--xp-ns-track); color: var(--xp-ns-ink); }
+.xp-ns-toggle svg { transition: transform 160ms ease; }
+.xp-ns-collapsed .xp-ns-toggle svg { transform: rotate(-90deg); }
+.xp-ns-collapsed .xp-ns-body { display: none; }
+.xp-ns-empty .xp-ns-body { display: none; }
+
+/* ---- Tiles ------------------------------------------------------------------- */
+.xp-ns-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+@container (max-width: 500px) {
+  .xp-ns-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xp-ns-cards { grid-template-columns: 1fr !important; }
+}
+.xp-ns-tile {
+  --c: var(--xp-ns-ink-2);
+  padding: 10px 10px 8px;
+  border-radius: 12px;
+  background: var(--xp-ns-tile);
+  min-width: 0;
+}
+.xp-ns-tile[data-kind="like"], [data-kind="like"] > svg { --c: var(--xp-ns-like); }
+.xp-ns-tile[data-kind="follow"] { --c: var(--xp-ns-follow); }
+.xp-ns-tile[data-kind="repost"], [data-kind="repost"] > svg { --c: var(--xp-ns-repost); }
+.xp-ns-tile[data-kind="reply"] { --c: var(--xp-ns-reply); }
+
+.xp-ns-tile-head {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--xp-ns-ink-2); font-size: 12.5px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.xp-ns-tile-head svg { color: var(--c); flex-shrink: 0; }
+.xp-ns-num {
+  margin: 6px 0 8px;
+  font-size: 26px; font-weight: 800; line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sparkline: 24 hourly bars, oldest left. Full-height columns are the hit targets. */
+.xp-ns-spark {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 2px;
+  height: 30px;
+  border-bottom: 1px solid var(--xp-ns-track);
+}
+.xp-ns-bar { display: flex; align-items: flex-end; height: 100%; cursor: default; }
+.xp-ns-bar i {
+  display: block; width: 100%;
+  background: var(--c);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+.xp-ns-tile[data-hover] .xp-ns-bar i { opacity: 0.35; }
+.xp-ns-tile[data-hover] .xp-ns-bar[data-on] i { opacity: 1; }
+
+/* ---- Cards: top post + new followers ---------------------------------------- */
+.xp-ns-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.xp-ns-card {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--xp-ns-tile);
+  color: inherit; text-decoration: none; min-width: 0;
+}
+a.xp-ns-card:hover { background: var(--xp-ns-track); }
+.xp-ns-card-label { color: var(--xp-ns-ink-2); font-size: 12.5px; font-weight: 600; }
+.xp-ns-top-text {
+  font-size: 14px; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.xp-ns-top-stats { display: flex; gap: 14px; color: var(--xp-ns-ink-2); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.xp-ns-top-stats span { display: inline-flex; align-items: center; gap: 4px; }
+.xp-ns-top-stats svg { width: 14px; height: 14px; color: var(--c); }
+
+.xp-ns-faces { display: flex; align-items: center; padding-left: 6px; }
+.xp-ns-faces a { margin-left: -6px; line-height: 0; }
+.xp-ns-faces img, .xp-ns-more {
+  width: 28px; height: 28px; border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--xp-ns-page);
+  object-fit: cover; background: var(--xp-ns-track);
+}
+.xp-ns-more {
+  display: inline-grid; place-items: center; margin-left: -6px;
+  color: var(--xp-ns-ink-2); font-size: 11px; font-weight: 700;
+  width: auto; min-width: 28px; padding: 0 6px; border-radius: 999px;
+}
+.xp-ns-follower-names { color: var(--xp-ns-ink-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.xp-ns-note { margin-top: 10px; color: var(--xp-ns-ink-2); font-size: 12px; }
+
+/* ---- Tooltip ----------------------------------------------------------------- */
+.xp-ns-tip {
+  position: absolute; z-index: 5;
+  translate: -50% -100%;
+  padding: 5px 8px; border-radius: 6px;
+  background: var(--xp-ns-tip-bg); color: var(--xp-ns-tip-fg);
+  font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none;
+}
+.xp-ns-tip[hidden] { display: none; }

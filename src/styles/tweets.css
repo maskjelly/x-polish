@@ -43,3 +43,51 @@
 :root.xp-hideMetrics article[data-xp-tweet] a[href$="/analytics"] {
   display: none !important;
 }
+
+/* ---- Sponsored posts: thin bevelled gold ring + "Sponsored" tag ------------
+   Uses the data-xp-ad marker from src/content/ads.js. Only visible when
+   "Block ads" is off (with it on, ads are removed instead). */
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] > div { border-bottom-color: transparent !important; }
+
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article {
+  position: relative;
+  isolation: isolate;
+  margin: 10px 10px 8px;
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(120, 85, 20, 0.16),
+    0 8px 18px -10px rgba(160, 115, 30, 0.4);
+}
+
+/* The ring: a 1.5px band whose gradient reads as light catching a gold edge */
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(145deg, #fff1c1 0%, #e8c25f 14%, #b9892c 38%, #f3da8f 55%, #a8771f 78%, #d9b056 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+/* Tag sitting on the top edge of the ring */
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::after {
+  content: "Sponsored";
+  position: absolute;
+  top: 0;
+  right: 18px;
+  translate: 0 -50%;
+  z-index: 3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f3d27a, #c9982f);
+  color: #3a2706;
+  font: 700 10.5px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(90, 60, 10, 0.3);
+  pointer-events: none;
+}
