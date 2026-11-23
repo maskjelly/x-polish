@@ -79,7 +79,7 @@ src/
   settings.js          toggle list + defaults (shared by popup and content script)
   page/
     adblock.js         MAIN-world filter: removes promoted entries from X's API responses
-    hook.js            MAIN-world reader: collects follows-you / you-follow flags
+    hook.js            MAIN-world reader: follow flags, account facts, notifications (+ 24h backfill)
   content/
     selectors.js       stable X selectors (data-testid), all in one place
     xapi.js            X's internal GraphQL API (same requests x.com makes)
@@ -89,6 +89,13 @@ src/
     hovercard.js       finds the profile hover card
     people.js          follow rings, tags, post tint, label buttons
     label-editor.js    popover for setting a person's colour + tag
+    paid.js            marks "Paid partnership" posts
+    notif-summary.js   "Last 24 hours" notifications panel (cached in local storage)
+    share.js           share a post / the 24h summary as a PNG image
+    ratio.js           engagement-rate meter, Hot / Ratioed badges
+    accounts.js        account age, New and Possible bot tags, profile line
+    shield.js          spoiler shield (blur posts matching your words)
+    focus.js           focus mode shortcut (Alt+Shift+F) and toast
     surfaces.js        marks sidebar boxes, the composer, notification rows; tracks the current page
     dom.js             shared helpers (find the element that draws a box, mark it)
     content.js         applies settings as <html> classes, tags tweets as they load
@@ -99,6 +106,12 @@ src/
     hovercard.css      profile hover card styling (also defines the shared metal/glass tokens)
     people.css         rings, tags, tint, label editor
     surfaces.css       sidebar boxes, post composer, notifications (flat, hairline style)
+    notif-summary.css  notifications summary panel
+    share.css          share button and modal
+    ratio.css          ratio meter
+    accounts.css       account tags and profile line
+    shield.css         spoiler shield overlay
+    focus.css          focus mode
   popup/               toolbar popup, built from settings.js
 icons/
 ```
