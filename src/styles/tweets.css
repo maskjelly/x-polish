@@ -8,11 +8,14 @@
   border: 1px solid var(--xp-card-border);
   border-radius: var(--xp-radius);
   box-shadow: var(--xp-shadow);
-  transition: background var(--xp-transition), transform var(--xp-transition);
 }
 
-:root.xp-tweetCards article[data-xp-tweet]:hover {
-  background: var(--xp-card-hover) !important;
+/* No hover effect on cards: neutralise X's hover fill on the cell wrappers
+   (it shows as a grey rectangle around the rounded card). */
+:root.xp-tweetCards [data-testid="cellInnerDiv"]:has(article[data-xp-tweet]),
+:root.xp-tweetCards [data-testid="cellInnerDiv"]:has(article[data-xp-tweet]) > div,
+:root.xp-tweetCards [data-testid="cellInnerDiv"]:has(article[data-xp-tweet]) > div > div {
+  background: transparent !important;
 }
 
 /* Remove X's default divider lines between tweets when cards are on */
