@@ -32,7 +32,7 @@ src/
     tweets.css         tweet styling
     chips.css          badge styling
     hovercard.css      profile hover card styling (also defines the shared metal/glass tokens)
-    surfaces.css       sidebar boxes, post composer, Post buttons, notifications
+    surfaces.css       sidebar boxes, post composer, notifications (flat, hairline style)
   popup/               toolbar popup, built from settings.js
 icons/
 ```

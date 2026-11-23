@@ -1,78 +1,51 @@
 /* ==========================================================================
    Sidebar boxes, post composer, notifications.
-   Shares the metal + glass tokens defined in hovercard.css.
+
+   Style: flat and quiet. Hairline borders, one soft fill, consistent radii
+   and spacing. No gradients, glows, shine or decorative color.
    ========================================================================== */
 
 :root {
-  --xp-panel-radius: 20px;
-  --xp-row-radius: 14px;
-  --xp-row-hover: rgba(15, 20, 25, 0.045);
-  --xp-accent: #1d9bf0;
-  --xp-focus-glow: 0 0 0 3px rgba(29, 155, 240, 0.18), 0 8px 28px -8px rgba(29, 155, 240, 0.35);
-  --xp-panel-shadow:
-    0 1px 1px rgba(15, 20, 25, 0.03),
-    0 6px 18px -8px rgba(15, 20, 25, 0.14);
+  --xp-panel-radius: 18px;
+  --xp-row-radius: 12px;
+  --xp-hairline: rgba(15, 20, 25, 0.1);
+  --xp-panel-fill: rgba(15, 20, 25, 0.02);
+  --xp-row-hover: rgba(15, 20, 25, 0.04);
+  --xp-unread: rgba(29, 155, 240, 0.06);
+  --xp-focus-border: rgba(29, 155, 240, 0.55);
 }
 :root.xp-dark {
-  --xp-row-hover: rgba(255, 255, 255, 0.05);
-  --xp-focus-glow: 0 0 0 3px rgba(29, 155, 240, 0.22), 0 8px 30px -8px rgba(29, 155, 240, 0.45);
-  --xp-panel-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.4),
-    0 10px 26px -10px rgba(0, 0, 0, 0.7);
-}
-
-/* Static brushed-metal ring, reused by panels and the composer */
-:root.xp-sidebarPanels [data-xp-panel]::before,
-:root.xp-composerPolish [data-xp-composer]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  padding: 1.25px;
-  border-radius: inherit;
-  background: linear-gradient(
-    155deg,
-    var(--xp-metal-1) 0%,
-    var(--xp-metal-2) 22%,
-    var(--xp-metal-3) 48%,
-    var(--xp-metal-2) 70%,
-    var(--xp-metal-4) 88%,
-    var(--xp-metal-3) 100%
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  opacity: 0.75;
-  pointer-events: none;
+  --xp-hairline: rgba(255, 255, 255, 0.1);
+  --xp-panel-fill: rgba(255, 255, 255, 0.025);
+  --xp-row-hover: rgba(255, 255, 255, 0.045);
+  --xp-unread: rgba(29, 155, 240, 0.08);
+  --xp-focus-border: rgba(29, 155, 240, 0.6);
 }
 
 /* ---- Sidebar boxes: What's happening / Who to follow ----------------------- */
 :root.xp-sidebarPanels [data-xp-panel] {
-  border-color: transparent !important;
+  border: 1px solid var(--xp-hairline) !important;
   border-radius: var(--xp-panel-radius) !important;
-  background:
-    radial-gradient(130% 60% at 0% 0%, var(--xp-hc-glow), transparent 55%),
-    linear-gradient(180deg, var(--xp-hc-bg-top), var(--xp-hc-bg-bottom)) !important;
-  box-shadow: var(--xp-panel-shadow) !important;
+  background: var(--xp-panel-fill) !important;
+  box-shadow: none !important;
   overflow: hidden;
-  isolation: isolate;
+  padding-bottom: 6px;
 }
 
 :root.xp-sidebarPanels [data-xp-panel] h2 {
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
-/* Rows: inset, rounded, soft hover */
+/* Rows: inset by 6px with rounded hover, instead of edge-to-edge strips */
 :root.xp-sidebarPanels [data-xp-panel] [data-testid="trend"],
 :root.xp-sidebarPanels [data-xp-panel] [data-testid="UserCell"],
-:root.xp-sidebarPanels [data-xp-panel] a[href="/explore/tabs/for-you"],
 :root.xp-sidebarPanels [data-xp-panel] a[href^="/explore/tabs/"],
 :root.xp-sidebarPanels [data-xp-panel] a[href^="/i/connect_people"],
 :root.xp-sidebarPanels [data-xp-panel] a[href^="/i/trends"] {
-  margin: 2px 8px;
+  margin: 0 6px;
   border-radius: var(--xp-row-radius);
   background-color: transparent !important;
-  transition: background-color 140ms ease;
+  transition: background-color 120ms ease;
 }
 :root.xp-sidebarPanels [data-xp-panel] [data-testid="trend"]:hover,
 :root.xp-sidebarPanels [data-xp-panel] [data-testid="UserCell"]:hover,
@@ -81,142 +54,42 @@
 :root.xp-sidebarPanels [data-xp-panel] a[href^="/i/trends"]:hover {
   background-color: var(--xp-row-hover) !important;
 }
-/* Keep the last row ("Show more") off the bottom edge */
-:root.xp-sidebarPanels [data-xp-panel] a[href^="/explore/tabs/"],
-:root.xp-sidebarPanels [data-xp-panel] a[href^="/i/connect_people"],
-:root.xp-sidebarPanels [data-xp-panel] a[href^="/i/trends"] {
-  margin-bottom: 8px;
-}
-
-:root.xp-sidebarPanels [data-xp-panel] [data-testid^="UserAvatar-Container"] {
-  filter:
-    drop-shadow(0 0 0.5px var(--xp-metal-1))
-    drop-shadow(0 0 1px var(--xp-metal-2))
-    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
-}
-
-/* ---- Glossy buttons: panel Follow buttons + Post buttons ------------------ */
-:root.xp-sidebarPanels [data-xp-panel] button,
-:root.xp-composerPolish [data-testid="tweetButtonInline"],
-:root.xp-composerPolish [data-testid="tweetButton"],
-:root.xp-composerPolish [data-testid="SideNav_NewTweet_Button"] {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 55%) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 2px rgba(0, 0, 0, 0.18),
-    0 4px 12px -4px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Post buttons: light sweep on hover */
-:root.xp-composerPolish [data-testid="tweetButtonInline"],
-:root.xp-composerPolish [data-testid="tweetButton"],
-:root.xp-composerPolish [data-testid="SideNav_NewTweet_Button"] {
-  position: relative;
-  overflow: hidden;
-  transition: transform 140ms ease, filter 140ms ease;
-}
-:root.xp-composerPolish [data-testid="tweetButtonInline"]::after,
-:root.xp-composerPolish [data-testid="tweetButton"]::after,
-:root.xp-composerPolish [data-testid="SideNav_NewTweet_Button"]::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  bottom: -50%;
-  left: 0;
-  width: 35%;
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
-  transform: translateX(-180%) skewX(-18deg);
-  pointer-events: none;
-}
-:root.xp-composerPolish [data-testid="tweetButtonInline"]:not([aria-disabled="true"]):hover,
-:root.xp-composerPolish [data-testid="tweetButton"]:not([aria-disabled="true"]):hover,
-:root.xp-composerPolish [data-testid="SideNav_NewTweet_Button"]:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-}
-:root.xp-composerPolish [data-testid="tweetButtonInline"]:not([aria-disabled="true"]):hover::after,
-:root.xp-composerPolish [data-testid="tweetButton"]:not([aria-disabled="true"]):hover::after,
-:root.xp-composerPolish [data-testid="SideNav_NewTweet_Button"]:hover::after {
-  transform: translateX(420%) skewX(-18deg);
-  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-:root.xp-composerPolish [data-testid="tweetButtonInline"][aria-disabled="true"],
-:root.xp-composerPolish [data-testid="tweetButton"][aria-disabled="true"] {
-  box-shadow: none !important;
-  background-image: none !important;
-}
 
 /* ---- Post composer -------------------------------------------------------- */
 :root.xp-composerPolish [data-xp-composer] {
-  margin: 10px 12px;
-  padding: 4px 4px 2px;
+  margin: 8px 12px;
+  border: 1px solid var(--xp-hairline);
   border-radius: var(--xp-panel-radius);
-  background: linear-gradient(180deg, var(--xp-hc-bg-top), var(--xp-hc-bg-bottom));
-  box-shadow: var(--xp-panel-shadow);
-  isolation: isolate;
-  transition: box-shadow 180ms ease;
+  background: var(--xp-panel-fill);
+  transition: border-color 150ms ease;
 }
 :root.xp-composerPolish [data-xp-composer]:focus-within {
-  box-shadow: var(--xp-panel-shadow), var(--xp-focus-glow);
+  border-color: var(--xp-focus-border);
 }
-:root.xp-composerPolish [data-xp-composer]:focus-within::before { opacity: 1; }
-
-:root.xp-composerPolish [data-xp-composer] [data-testid^="UserAvatar-Container"] {
-  filter:
-    drop-shadow(0 0 0.5px var(--xp-metal-1))
-    drop-shadow(0 0 1px var(--xp-metal-2))
-    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
-}
-
-/* Remove X's dividers around the composer so the panel stands alone */
-:root.xp-composerPolish [data-xp-composer] [role="progressbar"] + div,
+/* The panel replaces X's divider lines inside and around the composer */
 :root.xp-composerPolish [data-xp-composer] [data-testid="toolBar"] {
   border-top-color: transparent !important;
 }
 
 /* ---- Notifications -------------------------------------------------------- */
+/* Rounded, inset rows instead of full-width strips with dividers */
 :root.xp-notifPolish.xp-page-notifications [data-testid="primaryColumn"] [data-testid="cellInnerDiv"] > div {
   border-bottom-color: transparent !important;
 }
 
 :root.xp-notifPolish [data-xp-notif] {
-  margin: 3px 8px;
-  border-radius: 16px;
-  transition: background-color 140ms ease;
+  margin: 2px 8px;
+  border-radius: 14px;
+  transition: background-color 120ms ease;
 }
 :root.xp-notifPolish [data-xp-notif]:hover {
   background-color: var(--xp-row-hover) !important;
 }
 
-/* Unread: accent bar + soft tint */
+/* Unread: X tints a full-width wrapper; move that tint into the rounded row */
+:root.xp-notifPolish [data-xp-unread-bg] {
+  background-color: transparent !important;
+}
 :root.xp-notifPolish [data-xp-notif][data-xp-unread] {
-  background-image: linear-gradient(90deg, rgba(29, 155, 240, 0.12), rgba(29, 155, 240, 0.02) 60%) !important;
-  box-shadow: inset 3px 0 0 var(--xp-accent);
-}
-
-/* Type icon (like / repost / follow / bell...) in a tinted glass circle.
-   currentColor is the icon's own color, so each type gets its own tint. */
-:root.xp-notifPolish [data-xp-notif] svg[data-xp-nicon] {
-  box-sizing: content-box;
-  padding: 7px;
-  border-radius: 50%;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 60%),
-    color-mix(in srgb, currentColor 16%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, currentColor 32%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 3px 10px -3px color-mix(in srgb, currentColor 45%, transparent);
-}
-
-:root.xp-notifPolish [data-xp-notif] [data-testid^="UserAvatar-Container"] {
-  filter:
-    drop-shadow(0 0 0.5px var(--xp-metal-1))
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-testid="tweetButtonInline"]::after,
-  [data-testid="tweetButton"]::after,
-  [data-testid="SideNav_NewTweet_Button"]::after { display: none; }
+  background-color: var(--xp-unread) !important;
 }

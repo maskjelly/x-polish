@@ -24,18 +24,19 @@ const xpSurfaces = (() => {
     }
   }
 
-  // Notification rows: tag the type icon (first svg) and unread rows.
+  // Notification rows: tag the row, and unread rows. X tints unread rows on
+  // the article or a full-width wrapper; we mark that wrapper so CSS can move
+  // the tint into the rounded row.
   function notification(article) {
     if (article.hasAttribute("data-xp-notif")) return;
     article.setAttribute("data-xp-notif", "");
-    article.querySelector("svg")?.setAttribute("data-xp-nicon", "");
 
-    // Unread rows are tinted by X: compare against the page background.
     const pageBg = getComputedStyle(document.body).backgroundColor;
     for (let n = article, i = 0; n && i < 4; n = n.parentElement, i++) {
       const bg = getComputedStyle(n).backgroundColor;
       if (!xpDom.isTransparent(bg) && bg !== pageBg) {
         article.setAttribute("data-xp-unread", "");
+        if (n !== article) n.setAttribute("data-xp-unread-bg", "");
         break;
       }
     }
