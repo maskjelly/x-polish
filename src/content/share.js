@@ -240,38 +240,78 @@ const xpShare = (() => {
   }
 
   // ---- Post data from the DOM ----------------------------------------------------------
-  function postData(article) {
-    const nameBox = article.querySelector(XP_SEL.userName);
+  // A post can contain a quoted post with its own name, text, media and time.
+  // Everything is read from the post's OWN area only (the quoted post's area
+  // is excluded), and the quoted post is read separately into data.quote.
+
+  // The quoted post's root: the nearest ancestor of the 2nd User-Name block
+  // that doesn't also contain the main one.
+  function quoteRoot(article) {
+    const names = [...article.querySelectorAll(XP_SEL.userName)].filter((n) => n.closest(XP_SEL.tweet) === article);
+    if (names.length < 2) return null;
+    let el = names[1];
+    while (el.parentElement && el.parentElement !== article && !el.parentElement.contains(names[0])) el = el.parentElement;
+    return el.contains(names[0]) ? null : el;
+  }
+
+  // querySelectorAll limited to `root`, excluding anything inside `exclude`.
+  function own(root, sel, exclude) {
+    return [...root.querySelectorAll(sel)].filter((n) => !(exclude && exclude.contains(n)));
+  }
+
+  function readText(textEl) {
+    if (!textEl) return "";
+    // innerText, but use original link text for our badges (keep $TICKER / @user readable)
+    const clone = textEl.cloneNode(true);
+    clone.querySelectorAll(".xp-chip-inner").forEach((n) => n.remove());
+    clone.querySelectorAll("img[alt]").forEach((img) => img.replaceWith(document.createTextNode(img.alt)));
+    return (clone.innerText ?? clone.textContent ?? "").trim();
+  }
+
+  function readAuthor(root, exclude) {
+    const nameBox = own(root, XP_SEL.userName, exclude)[0];
     let name = "", handle = "";
     if (nameBox) {
       const links = [...nameBox.querySelectorAll("a")];
       name = (links[0]?.innerText || "").replace(/\s+/g, " ").trim();
-      const h = [...nameBox.querySelectorAll("span")].map((s) => s.textContent.trim()).find((t) => /^@\w{1,15}$/.test(t));
-      handle = h || "";
+      handle = [...nameBox.querySelectorAll("span")].map((s) => s.textContent.trim()).find((t) => /^@\w{1,15}$/.test(t)) || "";
       if (!name) name = (nameBox.innerText.split("\n")[0] || "").trim();
     }
-    const avatarBox = article.querySelector('[data-testid^="UserAvatar-Container-"]');
+    const avatarBox = own(root, '[data-testid^="UserAvatar-Container-"]', exclude)[0];
     if (!handle && avatarBox) handle = "@" + avatarBox.dataset.testid.slice("UserAvatar-Container-".length);
     const avatarUrl = avatarBox?.querySelector("img")?.src?.replace(/_(normal|bigger|mini|x96)\./, "_400x400.") || null;
     const squareAvatar = !!avatarBox?.querySelector('[style*="clip-path"]');
-
-    const textEl = article.querySelector(XP_SEL.tweetText);
-    let text = "";
-    if (textEl) {
-      // innerText, but use original link text for our badges (keep $TICKER / @user readable)
-      const clone = textEl.cloneNode(true);
-      clone.querySelectorAll(".xp-chip-inner").forEach((n) => n.remove());
-      clone.querySelectorAll("img[alt]").forEach((img) => img.replaceWith(document.createTextNode(img.alt)));
-      text = clone.innerText ?? clone.textContent ?? "";
-    }
-
-    const timeEl = article.querySelector("time[datetime]");
-    const date = timeEl ? new Date(timeEl.getAttribute("datetime")) : null;
-    const media = article.querySelector('[data-testid="tweetPhoto"] img')?.src || null;
     const verified = !!nameBox?.querySelector('[data-testid="icon-verified"], svg[aria-label*="erified"]');
+    return { name, handle, avatarUrl, squareAvatar, verified };
+  }
+
+  // Up to 4 photos; otherwise a video poster; otherwise a link-card image.
+  function readMedia(root, exclude) {
+    const photos = own(root, '[data-testid="tweetPhoto"] img', exclude).map((i) => i.src).filter(Boolean);
+    if (photos.length) return { kind: "photos", urls: [...new Set(photos)].slice(0, 4) };
+    const poster = own(root, '[data-testid="videoPlayer"] video[poster]', exclude)[0]?.getAttribute("poster")
+      || own(root, '[data-testid="videoPlayer"] img', exclude)[0]?.src;
+    if (poster) return { kind: "video", urls: [poster] };
+    const card = own(root, '[data-testid="card.wrapper"] img', exclude)[0]?.src;
+    if (card) return { kind: "card", urls: [card] };
+    return null;
+  }
+
+  function readTime(root, exclude) {
+    const t = own(root, "time[datetime]", exclude)[0];
+    return t ? new Date(t.getAttribute("datetime")) : null;
+  }
+
+  function postData(article) {
+    const qRoot = quoteRoot(article);
+    const author = readAuthor(article, qRoot);
+
+    // "Name reposted" / "Pinned" line above the post
+    const ctxEl = own(article, '[data-testid="socialContext"]', qRoot)[0];
+    const context = ctxEl ? (ctxEl.innerText || ctxEl.textContent || "").replace(/\s+/g, " ").trim() : "";
 
     const metrics = {};
-    const group = article.querySelector('[role="group"][aria-label]');
+    const group = own(article, '[role="group"][aria-label]', qRoot)[0];
     const label = group?.getAttribute("aria-label") || "";
     for (const [k, re] of [
       ["reply", /([\d,.]+\s*[KkMm]?)\s+repl/i],
@@ -282,7 +322,26 @@ const xpShare = (() => {
       const m = re.exec(label);
       if (m) metrics[k] = parseCount(m[1]);
     }
-    return { name, handle, avatarUrl, squareAvatar, text: text.trim(), date, media, verified, metrics };
+
+    let quote = null;
+    if (qRoot) {
+      quote = {
+        ...readAuthor(qRoot, null),
+        text: readText(qRoot.querySelector(XP_SEL.tweetText)),
+        media: readMedia(qRoot, null),
+        date: readTime(qRoot, null),
+      };
+    }
+
+    return {
+      ...author,
+      context,
+      text: readText(own(article, XP_SEL.tweetText, qRoot)[0]),
+      date: readTime(article, qRoot),
+      media: readMedia(article, qRoot),
+      metrics,
+      quote,
+    };
   }
 
   function parseCount(s) {
@@ -295,11 +354,88 @@ const xpShare = (() => {
   }
 
   // ---- Post card ------------------------------------------------------------------------
+  // Media grid like X's: 1 = full, 2 = side by side, 3 = one tall + two
+  // stacked, 4 = 2x2. Each tile is cropped to fill, with a 2px gap.
+  function mediaHeight(imgs, w, maxH) {
+    if (!imgs.length) return 0;
+    if (imgs.length === 1) {
+      const r = imgs[0].naturalHeight / imgs[0].naturalWidth || 0.5625;
+      return Math.min(Math.round(w * r), maxH);
+    }
+    return Math.min(Math.round(w * 0.5625), maxH);
+  }
+
+  function drawTile(ctx, img, x, y, w, h) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    const r = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+    const dw = img.naturalWidth * r, dh = img.naturalHeight * r;
+    ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    ctx.restore();
+  }
+
+  function drawMedia(ctx, imgs, kind, x, y, w, h, radius, surface) {
+    const gap = 2;
+    ctx.save();
+    roundRect(ctx, x, y, w, h, radius);
+    ctx.clip();
+    ctx.fillStyle = surface.line;
+    ctx.fillRect(x, y, w, h);
+    const half = (w - gap) / 2, halfH = (h - gap) / 2;
+    if (imgs.length === 1) drawTile(ctx, imgs[0], x, y, w, h);
+    else if (imgs.length === 2) { drawTile(ctx, imgs[0], x, y, half, h); drawTile(ctx, imgs[1], x + half + gap, y, half, h); }
+    else if (imgs.length === 3) {
+      drawTile(ctx, imgs[0], x, y, half, h);
+      drawTile(ctx, imgs[1], x + half + gap, y, half, halfH);
+      drawTile(ctx, imgs[2], x + half + gap, y + halfH + gap, half, halfH);
+    } else {
+      imgs.slice(0, 4).forEach((im, i) => drawTile(ctx, im, x + (i % 2) * (half + gap), y + Math.floor(i / 2) * (halfH + gap), half, halfH));
+    }
+    ctx.restore();
+    // Play badge for videos
+    if (kind === "video") {
+      const r = Math.min(30, h / 5);
+      const cx = x + w / 2, cy = y + h / 2;
+      ctx.save();
+      ctx.fillStyle = "rgba(15,20,25,0.62)";
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.3, cy - r * 0.42);
+      ctx.lineTo(cx + r * 0.48, cy);
+      ctx.lineTo(cx - r * 0.3, cy + r * 0.42);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.save();
+    roundRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, radius);
+    ctx.strokeStyle = surface.line;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function fmtDate(d, withTime = true) {
+    if (!d || isNaN(d)) return "";
+    const day = d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    return withTime ? `${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} · ${day}` : day;
+  }
+
   async function renderPost(data, themeId) {
     const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
-    const [avatar, media] = await Promise.all([fetchImg(data.avatarUrl), fetchImg(data.media)]);
+    const q = data.quote;
+    const [avatar, mainImgs, qAvatar, qImgs] = await Promise.all([
+      fetchImg(data.avatarUrl),
+      Promise.all((data.media?.urls || []).map(fetchImg)).then((l) => l.filter(Boolean)),
+      q ? fetchImg(q.avatarUrl) : null,
+      q ? Promise.all((q.media?.urls || []).slice(0, 1).map(fetchImg)).then((l) => l.filter(Boolean)) : [],
+    ]);
 
-    // Measure first with a scratch context
+    // ---- Measure ----
     const scratch = document.createElement("canvas").getContext("2d");
     const inner = 28; // card padding
     const cw = FRAME_W - PAD * 2;
@@ -308,77 +444,136 @@ const xpShare = (() => {
     const lineH = Math.round(textSize * 1.42);
     scratch.font = `400 ${textSize}px ${FONT}`;
     const lines = data.text ? wrap(scratch, data.text, textW) : [];
+    const mediaH = mediaHeight(mainImgs, textW, 420);
 
-    let mediaH = 0;
-    if (media) {
-      const ratio = media.naturalHeight / media.naturalWidth || 0.5625;
-      mediaH = Math.min(Math.round(textW * ratio), 420);
+    // Quoted post block
+    const qPad = 16, qTextSize = 16, qLineH = 23, qMaxLines = 6;
+    let qLines = [], qMediaH = 0, qH = 0;
+    if (q) {
+      scratch.font = `400 ${qTextSize}px ${FONT}`;
+      qLines = q.text ? wrap(scratch, q.text, textW - qPad * 2) : [];
+      if (qLines.length > qMaxLines) {
+        qLines = qLines.slice(0, qMaxLines);
+        qLines[qMaxLines - 1] = ellipsize(scratch, qLines[qMaxLines - 1] + " …", textW - qPad * 2);
+      }
+      qMediaH = mediaHeight(qImgs, textW - qPad * 2, 220);
+      qH = qPad + 24 + (qLines.length ? 10 + qLines.length * qLineH : 0) + (qMediaH ? 12 + qMediaH : 0) + qPad;
     }
+
     const metricKeys = ["reply", "repost", "like", "views"].filter((k) => data.metrics[k] != null);
     const showMetrics = prefs.metrics && metricKeys.length > 0;
-
+    const contextH = data.context ? 28 : 0;
     const headH = 52;
-    let cardH = inner + headH + 16 + lines.length * lineH + (media ? 16 + mediaH : 0) + 20 + 18 + (showMetrics ? 16 + 1 + 16 + 20 : 0) + inner;
-    if (!lines.length) cardH -= 0;
+    const cardH =
+      inner + contextH + headH +
+      (lines.length ? 16 + lines.length * lineH : 0) +
+      (mediaH ? 16 + mediaH : 0) +
+      (q ? 16 + qH : 0) +
+      20 + 18 +
+      (showMetrics ? 16 + 1 + 16 + 20 : 0) +
+      inner;
 
     const { canvas, ctx, surface, x, y, w } = frame(cardH, theme);
     const left = x + inner;
     let cy = y + inner;
-
-    // Header: avatar, name, seal, handle
-    drawAvatar(ctx, avatar, left, cy, 52, data.name, surface, data.squareAvatar);
-    const nx = left + 52 + 14;
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "left";
+
+    // ---- "Name reposted" / "Pinned" context line ----
+    if (data.context) {
+      const isRepost = /repost|retweet/i.test(data.context);
+      if (isRepost) drawIcon(ctx, "repost", left + 52 - 18, cy - 1, 16, surface.ink2);
+      ctx.font = `600 14px ${FONT}`;
+      ctx.fillStyle = surface.ink2;
+      ctx.fillText(ellipsize(ctx, data.context, textW - 66), left + 66, cy + 12);
+      cy += contextH;
+    }
+
+    // ---- Header: avatar, name, seal, handle ----
+    drawAvatar(ctx, avatar, left, cy, 52, data.name, surface, data.squareAvatar);
+    const nx = left + 52 + 14;
     ctx.font = `700 18px ${FONT}`;
     ctx.fillStyle = surface.ink;
-    const maxName = w - inner * 2 - 52 - 14 - (data.verified ? 26 : 0);
-    const nameText = ellipsize(ctx, data.name || data.handle, maxName);
+    const nameText = ellipsize(ctx, data.name || data.handle, w - inner * 2 - 52 - 14 - (data.verified ? 26 : 0));
     ctx.fillText(nameText, nx, cy + 22);
     if (data.verified) drawSeal(ctx, nx + ctx.measureText(nameText).width + 13, cy + 16, 9, "#1d9bf0");
     ctx.font = `400 15.5px ${FONT}`;
     ctx.fillStyle = surface.ink2;
     ctx.fillText(data.handle, nx, cy + 44);
-    cy += headH + 16;
+    cy += headH;
 
-    // Text
-    ctx.font = `400 ${textSize}px ${FONT}`;
-    ctx.fillStyle = surface.ink;
-    for (const line of lines) {
-      ctx.fillText(line, left, cy + textSize);
-      cy += lineH;
+    // ---- Text ----
+    if (lines.length) {
+      cy += 16;
+      ctx.font = `400 ${textSize}px ${FONT}`;
+      ctx.fillStyle = surface.ink;
+      for (const line of lines) {
+        ctx.fillText(line, left, cy + textSize);
+        cy += lineH;
+      }
     }
 
-    // Media
-    if (media) {
-      cy += 16 - (lines.length ? 0 : 16);
-      ctx.save();
-      roundRect(ctx, left, cy, textW, mediaH, 16);
-      ctx.clip();
-      const r = Math.max(textW / media.naturalWidth, mediaH / media.naturalHeight);
-      const dw = media.naturalWidth * r, dh = media.naturalHeight * r;
-      ctx.drawImage(media, left + (textW - dw) / 2, cy + (mediaH - dh) / 2, dw, dh);
-      ctx.restore();
-      ctx.save();
-      roundRect(ctx, left + 0.5, cy + 0.5, textW - 1, mediaH - 1, 16);
-      ctx.strokeStyle = surface.line;
-      ctx.stroke();
-      ctx.restore();
+    // ---- Media ----
+    if (mediaH) {
+      cy += 16;
+      drawMedia(ctx, mainImgs, data.media.kind, left, cy, textW, mediaH, 16, surface);
       cy += mediaH;
     }
 
-    // Date
+    // ---- Quoted post ----
+    if (q) {
+      cy += 16;
+      ctx.save();
+      roundRect(ctx, left + 0.5, cy + 0.5, textW - 1, qH - 1, 16);
+      ctx.strokeStyle = surface.line;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+      const qx = left + qPad;
+      let qy = cy + qPad;
+      drawAvatar(ctx, qAvatar, qx, qy, 24, q.name, surface, q.squareAvatar);
+      const qnx = qx + 24 + 8;
+      ctx.font = `700 15px ${FONT}`;
+      ctx.fillStyle = surface.ink;
+      const meta = [q.handle, fmtDate(q.date, false)].filter(Boolean).join(" · ");
+      ctx.font = `400 14px ${FONT}`;
+      const metaW = Math.min(ctx.measureText(meta).width, (textW - qPad * 2) * 0.45);
+      ctx.font = `700 15px ${FONT}`;
+      const qName = ellipsize(ctx, q.name || q.handle, textW - qPad * 2 - 32 - metaW - (q.verified ? 22 : 0) - 8);
+      ctx.fillText(qName, qnx, qy + 17);
+      let mx = qnx + ctx.measureText(qName).width;
+      if (q.verified) { drawSeal(ctx, mx + 10, qy + 12, 7.5, "#1d9bf0"); mx += 20; }
+      ctx.font = `400 14px ${FONT}`;
+      ctx.fillStyle = surface.ink2;
+      ctx.fillText(ellipsize(ctx, meta, metaW), mx + 6, qy + 17);
+      qy += 24;
+      if (qLines.length) {
+        qy += 10;
+        ctx.font = `400 ${qTextSize}px ${FONT}`;
+        ctx.fillStyle = surface.ink;
+        for (const line of qLines) {
+          ctx.fillText(line, qx, qy + qTextSize);
+          qy += qLineH;
+        }
+      }
+      if (qMediaH) {
+        qy += 12;
+        drawMedia(ctx, qImgs, q.media.kind, qx, qy, textW - qPad * 2, qMediaH, 12, surface);
+      }
+      cy += qH;
+    }
+
+    // ---- Date ----
     cy += 20;
-    if (data.date && !isNaN(data.date)) {
+    const when = fmtDate(data.date);
+    if (when) {
       ctx.font = `400 14.5px ${FONT}`;
       ctx.fillStyle = surface.ink2;
-      const t = data.date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-      const d = data.date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-      ctx.fillText(`${t} · ${d}`, left, cy + 14);
+      ctx.fillText(when, left, cy + 14);
     }
     cy += 18;
 
-    // Metrics
+    // ---- Metrics ----
     if (showMetrics) {
       cy += 16;
       ctx.fillStyle = surface.line;
@@ -397,7 +592,7 @@ const xpShare = (() => {
         ctx.fillText(num, mx + 26, cy + 14);
         ctx.font = `400 13.5px ${FONT}`;
         ctx.fillStyle = surface.ink2;
-        ctx.fillText(labels[k], mx + 26 + ctx.measureText(num).width + 14 + 0, cy + 14);
+        ctx.fillText(labels[k], mx + 26 + ctx.measureText(num).width + 14, cy + 14);
       });
     }
     return canvas;
