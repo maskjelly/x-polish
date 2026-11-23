@@ -19,7 +19,7 @@
 }
 
 /* Promoted tweets */
-:root.xp-hidePromoted .xp-promoted {
+:root.xp-hidePromoted [data-xp-promoted] {
   display: none !important;
 }
 

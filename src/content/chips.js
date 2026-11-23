@@ -18,7 +18,7 @@ const xpChips = (() => {
     const orig = el("span", "xp-orig");
     while (link.firstChild) orig.appendChild(link.firstChild);
     link.appendChild(orig);
-    link.classList.add("xp-chip", `xp-${kind}`);
+    link.setAttribute("data-xp-chip", kind); // attribute, not class: X rewrites classes
     const inner = el("span", `xp-chip-inner xp-${kind}-inner xp-loading`);
     link.appendChild(inner);
     return inner;

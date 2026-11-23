@@ -36,7 +36,8 @@ icons/
 
 - Every setting becomes a class on `<html>`: `xp-<key>` (e.g. `xp-tweetCards`). CSS rules are scoped
   under those classes, so toggling is instant and needs no reload.
-- Each tweet gets `.xp-tweet` (plus `.xp-has-media`, and its cell gets `.xp-promoted` when it's an ad).
+- Each tweet gets `data-xp-tweet` (plus `data-xp-media`, and its cell gets `data-xp-promoted` when it's an ad).
+  Never add classes to X's own elements: X's React code rewrites `class` on hover and wipes them.
   Per-tweet JS goes in `processTweet()` in `content.js`.
 
 ## Badges

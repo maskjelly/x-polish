@@ -1,18 +1,18 @@
 /* ---- Card-style tweets ---------------------------------------------------- */
-:root.xp-tweetCards [data-testid="cellInnerDiv"]:has(> div > div > article.xp-tweet) {
+:root.xp-tweetCards [data-testid="cellInnerDiv"]:has(> div > div > article[data-xp-tweet]) {
   padding: calc(var(--xp-gap) / 2) var(--xp-gap);
 }
 
-:root.xp-tweetCards article.xp-tweet {
-  background: var(--xp-card-bg);
+:root.xp-tweetCards article[data-xp-tweet] {
+  background: var(--xp-card-bg) !important;
   border: 1px solid var(--xp-card-border);
   border-radius: var(--xp-radius);
   box-shadow: var(--xp-shadow);
   transition: background var(--xp-transition), transform var(--xp-transition);
 }
 
-:root.xp-tweetCards article.xp-tweet:hover {
-  background: var(--xp-card-hover);
+:root.xp-tweetCards article[data-xp-tweet]:hover {
+  background: var(--xp-card-hover) !important;
 }
 
 /* Remove X's default divider lines between tweets when cards are on */
@@ -21,15 +21,15 @@
 }
 
 /* ---- Media ---------------------------------------------------------------- */
-:root.xp-roundedMedia article.xp-tweet [data-testid="tweetPhoto"],
-:root.xp-roundedMedia article.xp-tweet [data-testid="videoPlayer"],
-:root.xp-roundedMedia article.xp-tweet [data-testid="card.wrapper"] {
+:root.xp-roundedMedia article[data-xp-tweet] [data-testid="tweetPhoto"],
+:root.xp-roundedMedia article[data-xp-tweet] [data-testid="videoPlayer"],
+:root.xp-roundedMedia article[data-xp-tweet] [data-testid="card.wrapper"] {
   border-radius: var(--xp-radius-media) !important;
   overflow: hidden;
 }
 
 /* ---- Typography ----------------------------------------------------------- */
-:root.xp-betterType article.xp-tweet [data-testid="tweetText"] {
+:root.xp-betterType article[data-xp-tweet] [data-testid="tweetText"] {
   font-family: var(--xp-font) !important;
   font-size: var(--xp-text-size) !important;
   line-height: var(--xp-line-height) !important;
@@ -37,6 +37,6 @@
 }
 
 /* ---- Metrics -------------------------------------------------------------- */
-:root.xp-hideMetrics article.xp-tweet a[href$="/analytics"] {
+:root.xp-hideMetrics article[data-xp-tweet] a[href$="/analytics"] {
   display: none !important;
 }

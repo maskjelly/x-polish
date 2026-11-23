@@ -3,15 +3,15 @@
    (our badge). Exactly one is visible depending on the setting.                */
 .xp-chip-inner { display: none; }
 
-:root.xp-cashtagBadges a.xp-cash > .xp-orig,
-:root.xp-mentionBadges a.xp-mention > .xp-orig { display: none; }
+:root.xp-cashtagBadges a[data-xp-chip="cash"] > .xp-orig,
+:root.xp-mentionBadges a[data-xp-chip="mention"] > .xp-orig { display: none; }
 
-:root.xp-cashtagBadges a.xp-cash > .xp-chip-inner,
-:root.xp-mentionBadges a.xp-mention > .xp-chip-inner {
+:root.xp-cashtagBadges a[data-xp-chip="cash"] > .xp-chip-inner,
+:root.xp-mentionBadges a[data-xp-chip="mention"] > .xp-chip-inner {
   display: inline-flex;
 }
 
-a.xp-chip { text-decoration: none !important; }
+a[data-xp-chip] { text-decoration: none !important; }
 
 .xp-chip-inner {
   align-items: center;
@@ -25,7 +25,7 @@ a.xp-chip { text-decoration: none !important; }
   font-size: 0.92em;
   transition: filter var(--xp-transition), border-color var(--xp-transition);
 }
-a.xp-chip:hover > .xp-chip-inner { filter: brightness(1.15); }
+a[data-xp-chip]:hover > .xp-chip-inner { filter: brightness(1.15); }
 
 .xp-chip-inner img,
 .xp-letter {
@@ -57,7 +57,7 @@ a.xp-chip:hover > .xp-chip-inner { filter: brightness(1.15); }
   border: 1px solid var(--xp-cash-border);
   color: inherit;
 }
-a.xp-cash { color: inherit !important; }
+a[data-xp-chip="cash"] { color: inherit !important; }
 
 .xp-logo { border-radius: 50%; }
 img.xp-logo { background: #fff; }

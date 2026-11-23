@@ -12,20 +12,24 @@
     root.classList.toggle("xp-on", !!settings.enabled);
   }
 
+  // NOTE: never add classes to X's own elements. X's React code rewrites
+  // their `class` attribute (e.g. on hover) and wipes ours. Use data-xp-*
+  // attributes instead; classes are fine on <html> and on elements we create.
+
   // ---- Per-tweet processing ----------------------------------------------
   // Add tweet-level enhancements inside processTweet. It runs once per tweet.
   function processTweet(tweet) {
     if (tweet.dataset.xpDone) return;
     tweet.dataset.xpDone = "1";
-    tweet.classList.add("xp-tweet");
+    tweet.setAttribute("data-xp-tweet", "");
 
     // Mark promoted tweets (X labels them with an "Ad"/"Promoted" span)
     const isPromoted = [...tweet.querySelectorAll("span")].some(
       (s) => s.textContent === "Ad" || s.textContent === "Promoted"
     );
-    if (isPromoted) tweet.closest(XP_SEL.cellInner)?.classList.add("xp-promoted");
+    if (isPromoted) tweet.closest(XP_SEL.cellInner)?.setAttribute("data-xp-promoted", "");
 
-    if (tweet.querySelector(XP_SEL.media)) tweet.classList.add("xp-has-media");
+    if (tweet.querySelector(XP_SEL.media)) tweet.setAttribute("data-xp-media", "");
 
     xpApi.harvestAuthor(tweet);
   }
