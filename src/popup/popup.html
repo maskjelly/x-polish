@@ -2,19 +2,34 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <header>
-    <h1>X Polish</h1>
-    <span class="version" id="version"></span>
+  <header class="top">
+    <div class="brand">
+      <h1>X Polish</h1>
+      <span class="version" id="version"></span>
+    </div>
+    <label class="switch" title="Turn X Polish on or off">
+      <input type="checkbox" role="switch" id="master" aria-label="Enable X Polish" />
+      <span aria-hidden="true"></span>
+    </label>
   </header>
+
   <main id="toggles"></main>
-  <section id="people">
-    <h2>My labels</h2>
-    <p class="empty" id="people-empty">Hover a post and click the tag icon next to the name to label someone.</p>
-    <ul id="people-list"></ul>
+
+  <section class="group" id="people" aria-labelledby="people-title">
+    <h2 id="people-title">My labels <span class="count" id="people-count"></span></h2>
+    <div class="card">
+      <div class="empty" id="people-empty">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12.6V4.5C3 3.67 3.67 3 4.5 3h8.1c.4 0 .78.16 1.06.44l7.4 7.4a1.5 1.5 0 0 1 0 2.12l-8.1 8.1a1.5 1.5 0 0 1-2.12 0l-7.4-7.4A1.5 1.5 0 0 1 3 12.6Z"/><circle cx="8" cy="8" r="1.6"/></svg>
+        <p>No labels yet. Hover a post and click the tag icon next to the name to give someone a colour and tag.</p>
+      </div>
+      <ul id="people-list"></ul>
+    </div>
   </section>
+
   <script src="../settings.js"></script>
   <script src="../labels.js"></script>
   <script src="popup.js"></script>
