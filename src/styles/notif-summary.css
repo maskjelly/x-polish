@@ -129,6 +129,8 @@
 }
 .xp-ns-tile-label span { overflow: hidden; text-overflow: ellipsis; }
 .xp-ns-tile-label svg { color: var(--c); }
+.xp-ns-tile[data-zero] .xp-ns-num { color: var(--xp-ns-ink-3); }
+.xp-ns-tile[data-zero] .xp-ns-tile-label svg { opacity: 0.5; }
 .xp-ns-num {
   margin-top: 6px;
   font-size: 22px; font-weight: 800; line-height: 1;
@@ -213,13 +215,19 @@ a.xp-ns-card:focus-visible { outline: 2px solid var(--xp-ns-follow); outline-off
 .xp-ns-top-stats svg { width: 14px; height: 14px; color: var(--c); }
 
 .xp-ns-faces { display: flex; align-items: center; padding-left: 6px; }
-.xp-ns-faces a { margin-left: -6px; line-height: 0; border-radius: 50%; }
-.xp-ns-faces img, .xp-ns-more {
+.xp-ns-faces a { margin-left: -6px; line-height: 0; border-radius: 50%; text-decoration: none !important; }
+.xp-ns-faces a:focus-visible { outline: 2px solid var(--xp-ns-follow); outline-offset: 2px; }
+.xp-ns-faces img, .xp-ns-more, .xp-ns-face-letter {
   width: 30px; height: 30px;
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--xp-ns-page);
   object-fit: cover;
   background: var(--xp-ns-hover);
+}
+.xp-ns-face-letter {
+  display: grid; place-items: center;
+  color: var(--xp-ns-ink-2);
+  font-size: 12px; font-weight: 700;
 }
 .xp-ns-more {
   display: inline-grid; place-items: center;

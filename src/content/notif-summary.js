@@ -33,7 +33,10 @@ const xpNotifSummary = (() => {
   const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 
   const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
-  const hourFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+  // Clock-hour labels: "10 PM" where people use 12-hour time, "22:00" otherwise.
+  const uses24h = /h2[34]/.test(new Intl.DateTimeFormat(undefined, { hour: "numeric" }).resolvedOptions().hourCycle || "");
+  const hourFmt = new Intl.DateTimeFormat(undefined, uses24h ? { hour: "2-digit", minute: "2-digit" } : { hour: "numeric" });
+  const floorHour = (t) => { const d = new Date(t); d.setMinutes(0, 0, 0); return d.getTime(); };
   const plural = (n, k) => `${n.toLocaleString()} ${n === 1 ? k.one : k.many}`;
 
   function esc(s) {
@@ -53,7 +56,7 @@ const xpNotifSummary = (() => {
     for (const e of recent) {
       const kind = KINDS.find((k) => k.types.includes(e.type));
       if (!kind) continue;
-      const i = Math.min(23, Math.max(0, 23 - Math.floor((now - e.ts) / HOUR)));
+      const i = Math.min(23, Math.max(0, 23 - Math.round((floorHour(now) - floorHour(e.ts)) / HOUR)));
       hours[i][kind.key] += e.count;
       totals[kind.key] += e.count;
     }
@@ -90,13 +93,13 @@ const xpNotifSummary = (() => {
     };
   }
 
-  const hourStart = (m, i) => m.now - (24 - i) * HOUR;
+  const hourStart = (m, i) => floorHour(m.now) - (23 - i) * HOUR;
 
   // ---- Render pieces -------------------------------------------------------------
   function tilesHtml(m) {
     return KINDS.map(
       (k) => `
-      <div class="xp-ns-tile" data-kind="${k.key}">
+      <div class="xp-ns-tile" data-kind="${k.key}"${m.totals[k.key] ? "" : " data-zero"}>
         <div class="xp-ns-tile-label">${icon(k.key)}<span>${k.label}</span></div>
         <div class="xp-ns-num">${compact.format(m.totals[k.key])}</div>
       </div>`
@@ -104,7 +107,8 @@ const xpNotifSummary = (() => {
   }
 
   function chartHtml(m) {
-    const max = Math.max(1, ...m.hourTotals);
+    // Floor of 5 so a single like on a quiet day doesn't fill the chart.
+    const max = Math.max(5, ...m.hourTotals);
     const cols = m.hours
       .map((h, i) => {
         const segs = KINDS.filter((k) => h[k.key] > 0)
@@ -141,8 +145,8 @@ const xpNotifSummary = (() => {
           <span class="xp-ns-card-label">Top post</span>
           <span class="xp-ns-top-text">${esc(m.top.text.replace(/https:\/\/t\.co\/\S+/g, "").trim() || "Your post")}</span>
           <span class="xp-ns-top-stats">
-            <span data-kind="like">${icon("like")}${compact.format(m.top.like)}</span>
-            <span data-kind="repost">${icon("repost")}${compact.format(m.top.repost)}</span>
+            ${m.top.like ? `<span data-kind="like">${icon("like")}${compact.format(m.top.like)}</span>` : ""}
+            ${m.top.repost ? `<span data-kind="repost">${icon("repost")}${compact.format(m.top.repost)}</span>` : ""}
           </span>
         </a>`
       : "";
@@ -159,7 +163,13 @@ const xpNotifSummary = (() => {
       ? `<div class="xp-ns-card xp-ns-followers">
           <span class="xp-ns-card-label">New followers</span>
           <span class="xp-ns-faces">${shown
-            .map((u) => `<a href="/${esc(u.handle)}" title="${esc(u.name)} @${esc(u.handle)}"><img src="${esc((u.avatar || "").replace("_normal.", "_bigger."))}" alt="${esc(u.name || u.handle)}" referrerpolicy="no-referrer"></a>`)
+            .map((u) => {
+              const initial = esc((u.name || u.handle || "?").trim().charAt(0).toUpperCase());
+              const face = u.avatar
+                ? `<img src="${esc(u.avatar.replace("_normal.", "_bigger."))}" alt="" data-initial="${initial}" referrerpolicy="no-referrer">`
+                : `<span class="xp-ns-face-letter" aria-hidden="true">${initial}</span>`;
+              return `<a href="/${esc(u.handle)}" title="${esc(u.name || "")} @${esc(u.handle)}" aria-label="${esc(u.name || u.handle)}">${face}</a>`;
+            })
             .join("")}${more ? `<span class="xp-ns-more">+${compact.format(more)}</span>` : ""}</span>
           <span class="xp-ns-follower-names">${names}</span>
         </div>`
@@ -214,6 +224,16 @@ const xpNotifSummary = (() => {
         <p class="xp-ns-note">${note}</p>
       </div>` : ""}
       <div class="xp-ns-tip" role="tooltip" hidden></div>`;
+
+    panel.querySelectorAll(".xp-ns-faces img").forEach((img) => {
+      img.addEventListener("error", () => {
+        const letter = document.createElement("span");
+        letter.className = "xp-ns-face-letter";
+        letter.setAttribute("aria-hidden", "true");
+        letter.textContent = img.dataset.initial || "?";
+        img.replaceWith(letter);
+      }, { once: true });
+    });
   }
 
   // ---- Tooltip -------------------------------------------------------------------
