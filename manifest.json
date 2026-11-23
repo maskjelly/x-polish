@@ -31,7 +31,8 @@
       "css": [
         "src/styles/base.css",
         "src/styles/tweets.css",
-        "src/styles/chips.css"
+        "src/styles/chips.css",
+        "src/styles/hovercard.css"
       ],
       "js": [
         "src/settings.js",
@@ -39,6 +40,7 @@
         "src/content/xapi.js",
         "src/content/api.js",
         "src/content/chips.js",
+        "src/content/hovercard.js",
         "src/content/content.js"
       ],
       "run_at": "document_start"

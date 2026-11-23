@@ -6,6 +6,7 @@ const XP_SETTINGS = [
   { key: "roundedMedia",   label: "Rounded media",            default: false },
   { key: "cashtagBadges",  label: "Stock badges ($TICKER)",   default: true },
   { key: "mentionBadges",  label: "Profile badges (@user)",   default: true },
+  { key: "profileCards",   label: "Polished profile cards",   default: true },
   { key: "betterType",     label: "Nicer typography",         default: false },
   { key: "hideMetrics",    label: "Hide view counts",         default: false },
   { key: "hidePromoted",   label: "Hide promoted tweets",     default: false },

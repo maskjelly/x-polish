@@ -52,6 +52,7 @@
     { selector: XP_SEL.tweet, run: processTweet },
     { selector: XP_SEL.cashtag, run: xpChips.cashtag },
     { selector: XP_SEL.mention, run: xpChips.mention },
+    { selector: XP_SEL.hoverCard, run: xpHoverCard.mark },
   ];
 
   function scan(node = document) {

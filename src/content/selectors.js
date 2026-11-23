@@ -12,4 +12,6 @@ const XP_SEL = {
   primaryColumn: '[data-testid="primaryColumn"]',
   cashtag: '[data-testid="tweetText"] a[href*="cashtag_click"]',
   mention: '[data-testid="tweetText"] a[href^="/"]',
+  // Classic client testid, and the new client's popup classes (Tailwind).
+  hoverCard: '[data-testid="HoverCard"], [class~="w-[320px]"][class~="min-h-[130px]"]',
 };

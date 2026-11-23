@@ -23,11 +23,13 @@ src/
     xapi.js            X's internal GraphQL API (same requests x.com makes)
     api.js             content-side data layer (messages background, harvests on-page profiles)
     chips.js           $cashtag and @mention badges
+    hovercard.js       finds the profile hover card
     content.js         applies settings as <html> classes, tags tweets as they load
   styles/
     base.css           design tokens (radius, colors, fonts) + layout tweaks
     tweets.css         tweet styling
     chips.css          badge styling
+    hovercard.css      profile hover card styling
   popup/               toolbar popup, built from settings.js
 icons/
 ```
@@ -50,6 +52,13 @@ icons/
   Profiles come from tweets already on the page first, otherwise from api.fxtwitter.com.
 - All network calls go through `src/background.js` (x.com's CSP blocks them from the page) and are cached:
   prices 1 min, profiles 6 h, logos 7 days.
+
+## Profile hover card
+
+`src/content/hovercard.js` finds X's profile hover card (classic `data-testid="HoverCard"` or the new client's
+Base UI popup) and marks the box that paints it with `data-xp-hovercard`. `src/styles/hovercard.css` adds the
+brushed-metal border (rotating conic gradient masked to a ring), a one-time light sweep on open, a glass body,
+stat pills and glossy buttons. Cashtag hover cards are left alone.
 
 ## Adding a feature
 
