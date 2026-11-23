@@ -12,6 +12,10 @@ const XP_SEL = {
   primaryColumn: '[data-testid="primaryColumn"]',
   cashtag: '[data-testid="tweetText"] a[href*="cashtag_click"]',
   mention: '[data-testid="tweetText"] a[href^="/"]',
+  sidebarSection: '[data-testid="sidebarColumn"] section, [data-testid="sidebarColumn"] aside',
+  composerToolbar: '[data-testid="toolBar"]',
+  composerText: '[data-testid^="tweetTextarea_"]',
+  notification: 'article[data-testid="notification"]',
   // Classic client testid, and the new client's popup classes (Tailwind).
   hoverCard: '[data-testid="HoverCard"], [class~="w-[320px]"][class~="min-h-[130px]"]',
 };

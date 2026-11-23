@@ -22,3 +22,7 @@
   display: none !important;
 }
 
+
+/* Elements we mark for pseudo-element styling get a positioning context
+   (only set by JS on elements that were position: static). */
+[data-xp-pos] { position: relative; }

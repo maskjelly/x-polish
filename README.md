@@ -24,12 +24,15 @@ src/
     api.js             content-side data layer (messages background, harvests on-page profiles)
     chips.js           $cashtag and @mention badges
     hovercard.js       finds the profile hover card
+    surfaces.js        marks sidebar boxes, the composer, notification rows; tracks the current page
+    dom.js             shared helpers (find the element that draws a box, mark it)
     content.js         applies settings as <html> classes, tags tweets as they load
   styles/
     base.css           design tokens (radius, colors, fonts) + layout tweaks
     tweets.css         tweet styling
     chips.css          badge styling
-    hovercard.css      profile hover card styling
+    hovercard.css      profile hover card styling (also defines the shared metal/glass tokens)
+    surfaces.css       sidebar boxes, post composer, Post buttons, notifications
   popup/               toolbar popup, built from settings.js
 icons/
 ```

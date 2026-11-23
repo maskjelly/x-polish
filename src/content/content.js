@@ -53,6 +53,9 @@
     { selector: XP_SEL.cashtag, run: xpChips.cashtag },
     { selector: XP_SEL.mention, run: xpChips.mention },
     { selector: XP_SEL.hoverCard, run: xpHoverCard.mark },
+    { selector: XP_SEL.sidebarSection, run: xpSurfaces.sidebarPanel },
+    { selector: XP_SEL.composerToolbar, run: xpSurfaces.composer },
+    { selector: XP_SEL.notification, run: xpSurfaces.notification },
   ];
 
   function scan(node = document) {
@@ -73,6 +76,7 @@
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
+      xpSurfaces.updateRoute(); // SPA navigation shows up as DOM changes
       const nodes = pending;
       pending = new Set();
       nodes.forEach((n) => n.isConnected && scan(n));
@@ -81,6 +85,7 @@
 
   function start() {
     detectTheme();
+    xpSurfaces.updateRoute();
     // X switches theme by restyling <body>; re-check when that happens.
     new MutationObserver(detectTheme).observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
     scan();
