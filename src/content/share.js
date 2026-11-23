@@ -769,8 +769,9 @@ const xpShare = (() => {
         </div>
         <footer class="xp-share-actions">
           <span class="xp-share-status" role="status"></span>
-          <button type="button" class="xp-share-btn-secondary" data-act="download">Download PNG</button>
-          <button type="button" class="xp-share-btn-primary" data-act="copy">Copy image</button>
+          <button type="button" class="xp-share-btn-secondary" data-act="download">Download</button>
+          <button type="button" class="xp-share-btn-secondary" data-act="copy">Copy image</button>
+          <button type="button" class="xp-share-btn-primary" data-act="post">Post to X</button>
         </footer>
       </div>`;
 
@@ -794,6 +795,7 @@ const xpShare = (() => {
       if (e.target.closest(".xp-share-x")) return close();
       const act = e.target.closest("[data-act]")?.dataset.act;
       if (act === "copy") return copy();
+      if (act === "post") return postToX();
       if (act === "download") return download();
     });
     modal.addEventListener("change", (e) => {
@@ -890,12 +892,74 @@ const xpShare = (() => {
     }
   }
 
+  function fileBase() {
+    return current.kind === "summary" ? "my-24h-on-x" : `post-${(current.data.handle || "x").replace(/^@/, "")}`;
+  }
+
+  // Polls until `get()` returns something, or gives up after `ms`.
+  function waitFor(get, ms) {
+    return new Promise((resolve) => {
+      const end = Date.now() + ms;
+      (function tick() {
+        const v = get();
+        if (v || Date.now() > end) return resolve(v || null);
+        setTimeout(tick, 60);
+      })();
+    });
+  }
+
+  // Small toast for messages after the modal has closed.
+  let toastEl = null, toastTimer = 0;
+  function toast(text) {
+    if (!toastEl) {
+      toastEl = document.createElement("div");
+      toastEl.className = "xp-share-toast";
+      toastEl.setAttribute("role", "status");
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = text;
+    toastEl.classList.add("xp-show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("xp-show"), 2600);
+  }
+
+  // Post to X: open X's own composer and attach the image through its file
+  // input (the same path as picking a photo). If the composer can't be found,
+  // fall back to copying the image so the user can paste it.
+  async function postToX() {
+    let b;
+    try { b = await blob(); } catch { return status("The image isn't ready yet"); }
+    const copyFallback = async (msg) => {
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); toast(msg); }
+      catch { toast("Couldn't open the composer. Use Download instead."); }
+    };
+    const openBtn = document.querySelector('[data-testid="SideNav_NewTweet_Button"], a[href="/compose/post"], a[href="/compose/tweet"]');
+    if (!openBtn) {
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); status("Copied. Open a new post and paste."); }
+      catch { status("Couldn't find X's composer. Use Download."); }
+      return;
+    }
+    const file = new File([b], `${fileBase()}.png`, { type: "image/png" });
+    close();
+    openBtn.click();
+    const input = await waitFor(
+      () => document.querySelector('[role="dialog"] input[data-testid="fileInput"], [role="dialog"] input[type="file"][accept*="image"]'),
+      5000
+    );
+    if (!input) return copyFallback("Image copied. Paste it into your post.");
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    const box = await waitFor(() => document.querySelector('[role="dialog"] [data-testid^="tweetTextarea_"]'), 2000);
+    box?.focus();
+  }
+
   async function download() {
     try {
       const b = await blob();
       const a = document.createElement("a");
-      const base = current.kind === "summary" ? "my-24h-on-x" : `post-${(current.data.handle || "x").replace(/^@/, "")}`;
-      a.download = `${base}.png`;
+      a.download = `${fileBase()}.png`;
       a.href = URL.createObjectURL(b);
       document.body.appendChild(a);
       a.click();

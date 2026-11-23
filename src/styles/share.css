@@ -250,3 +250,24 @@
   .xp-share-backdrop, .xp-share { animation: none; }
   .xp-share-theme, .xp-share-img { transition: none; }
 }
+
+/* ---- Toast (shown after the modal closes, e.g. Post to X fallback) -------- */
+.xp-share-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 2147483000;
+  translate: -50% 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #0f1419;
+  color: #fff;
+  font: 600 13.5px/1.2 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, translate 160ms ease;
+}
+:root.xp-dark .xp-share-toast { background: #eff3f4; color: #0f1419; }
+.xp-share-toast.xp-show { opacity: 1; translate: -50% 0; }
+@media (prefers-reduced-motion: reduce) { .xp-share-toast { transition: none; } }
