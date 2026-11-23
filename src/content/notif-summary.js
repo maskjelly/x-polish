@@ -274,19 +274,77 @@ const xpNotifSummary = (() => {
     render();
   }
 
-  // Ask the page script to load older pages until the last 24h are covered.
-  // Also covers the case where X showed the list from memory (no request seen).
+  // ---- Local cache ----------------------------------------------------------------
+  // Events are kept in chrome.storage.local per account, so opening the page
+  // shows the summary at once and only the gap since the last visit is loaded.
+  const KEEP = 26 * HOUR;
+  const MAX_STORED = 2000;
+  const viewer = (document.cookie.match(/(?:^|;\s*)twid=([^;]+)/) || [])[1];
+  const storeKey = `xpNotifEvents:${viewer ? decodeURIComponent(viewer).replace(/\D/g, "") : "anon"}`;
+  let hydrated = false;
+  let storedNewest = null; // newest event we had before this page session
+  let sessionOldest = Infinity; // oldest event X delivered during this session
+
+  function hydrate() {
+    try {
+      chrome.storage.local.get(storeKey, (v) => {
+        const cutoff = Date.now() - KEEP;
+        for (const ev of v?.[storeKey] || []) {
+          if (ev.ts >= cutoff && !events.has(ev.id)) events.set(ev.id, ev);
+        }
+        storedNewest = events.size ? Math.max(...[...events.values()].map((e) => e.ts)) : null;
+        hydrated = true;
+        ensure();
+        render();
+      });
+    } catch {
+      hydrated = true;
+    }
+  }
+
+  let saveTimer = 0;
+  function persist() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const cutoff = Date.now() - KEEP;
+      const keep = [...events.values()].filter((e) => e.ts >= cutoff).sort((a, b) => b.ts - a.ts).slice(0, MAX_STORED);
+      try { chrome.storage.local.set({ [storeKey]: keep }); } catch {}
+    }, 1000);
+  }
+
+  // Load only what's missing:
+  //  - nothing stored: page back until the last 24h are covered
+  //  - stored data: page back only until we reach the newest stored event,
+  //    and not at all if X's own first page already reaches it
+  let pageSeenAt = 0;
+  let recheck = 0;
   function maybeBackfill() {
-    if (fill.running || Date.now() - fill.lastAsk < 60_000) return;
-    const covered = events.size && Date.now() - Math.min(...[...events.values()].map((e) => e.ts)) >= DAY - HOUR;
-    if (covered) return;
+    if (!hydrated || fill.running || Date.now() - fill.lastAsk < 60_000) return;
+    // Give X's own first load a chance before deciding anything; if it shows
+    // the list from memory and loads nothing, decide after 3 seconds.
+    if (sessionOldest === Infinity && Date.now() - pageSeenAt < 3000) {
+      clearTimeout(recheck);
+      recheck = setTimeout(maybeBackfill, 3000 - (Date.now() - pageSeenAt));
+      return;
+    }
+    const dayAgo = Date.now() - DAY;
+    let until;
+    if (storedNewest && storedNewest > dayAgo) {
+      if (sessionOldest <= storedNewest) return; // gap already closed by X's own load
+      until = storedNewest;
+    } else {
+      const oldest = events.size ? Math.min(...[...events.values()].map((e) => e.ts)) : Infinity;
+      if (oldest <= dayAgo + HOUR) return;
+      until = dayAgo;
+    }
     fill.lastAsk = Date.now();
-    window.postMessage({ source: "xp-cs", type: "notif-backfill" }, location.origin);
+    window.postMessage({ source: "xp-cs", type: "notif-backfill", until }, location.origin);
   }
 
   // Keep the panel directly above the notifications list while on that page.
   function ensure() {
-    if (!/^\/notifications(\/|$)/.test(location.pathname)) { panel?.remove(); return; }
+    if (!/^\/notifications(\/|$)/.test(location.pathname)) { panel?.remove(); pageSeenAt = 0; return; }
+    if (!pageSeenAt) pageSeenAt = Date.now();
     const list = document.querySelector('[data-testid="primaryColumn"] section[role="region"]');
     if (!list?.parentElement) return;
     if (!panel) build();
@@ -305,7 +363,11 @@ const xpNotifSummary = (() => {
       return;
     }
     if (e.data.type !== "notifications") return;
-    for (const ev of e.data.events || []) events.set(ev.id, ev);
+    for (const ev of e.data.events || []) {
+      events.set(ev.id, ev);
+      sessionOldest = Math.min(sessionOldest, ev.ts);
+    }
+    persist();
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => { queued = false; ensure(); render(); });
@@ -313,6 +375,8 @@ const xpNotifSummary = (() => {
 
   // Keep the "last 24h" window honest while the page stays open.
   setInterval(() => panel?.isConnected && render(), 5 * 60 * 1000);
+
+  hydrate();
 
   return { ensure };
 })();

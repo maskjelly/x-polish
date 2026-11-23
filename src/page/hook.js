@@ -339,14 +339,15 @@
     throw new Error("request refused");
   }
 
-  async function backfill() {
+  // Pages back until the oldest loaded notification reaches `until` (ms).
+  async function backfill(until = Date.now() - DAY) {
     if (backfilling) return;
     backfilling = true;
     const status = (state, extra) => window.postMessage({ source: "xp-hook", type: "notif-backfill", state, ...extra }, location.origin);
     status("running");
     let pages = 0;
     try {
-      while (pages < 8 && oldestTs > Date.now() - DAY) {
+      while (pages < 8 && oldestTs > until) {
         const before = bottomCursor;
         // No cursor yet: X showed the list from memory, so load the first page ourselves.
         const { json, url } = await getPage(pages === 0 && !before ? null : before);
@@ -365,7 +366,7 @@
 
   window.addEventListener("message", (e) => {
     if (e.source !== window || e.data?.source !== "xp-cs") return;
-    if (e.data.type === "notif-backfill") backfill();
+    if (e.data.type === "notif-backfill") backfill(Number(e.data.until) || undefined);
   });
 
   // fetch (new client)
