@@ -27,7 +27,7 @@
 /* Colour per kind -> --xp-pc */
 [data-xp-ring="following"], [data-xp-hl="following"], .xp-ptag[data-kind="following"] { --xp-pc: var(--xp-gold); }
 [data-xp-ring="followed"],  [data-xp-hl="followed"],  .xp-ptag[data-kind="followed"]  { --xp-pc: var(--xp-green); }
-[data-xp-ring="mutual"],    [data-xp-hl="mutual"]                                      { --xp-pc: var(--xp-green); }
+[data-xp-ring="mutual"],    [data-xp-hl="mutual"],    .xp-ptag[data-kind="mutual"]    { --xp-pc: var(--xp-green); }
 [data-xp-ring="c-red"],    [data-xp-hl="c-red"],    .xp-ptag[data-kind="c-red"]    { --xp-pc: var(--xp-c-red); }
 [data-xp-ring="c-orange"], [data-xp-hl="c-orange"], .xp-ptag[data-kind="c-orange"] { --xp-pc: var(--xp-c-orange); }
 [data-xp-ring="c-yellow"], [data-xp-hl="c-yellow"], .xp-ptag[data-kind="c-yellow"] { --xp-pc: var(--xp-c-yellow); }
@@ -39,22 +39,37 @@
 [data-xp-ring="c-gray"],   [data-xp-hl="c-gray"],   .xp-ptag[data-kind="c-gray"]   { --xp-pc: var(--xp-c-gray); }
 
 /* ---- Avatar ring ---------------------------------------------------------- */
-/* Follow rings only when that setting is on; custom-label rings when labels are on */
-:root.xp-peopleRings [data-testid^="UserAvatar-Container-"][data-xp-ring]:not([data-xp-ring^="c-"]),
-:root.xp-customLabels [data-testid^="UserAvatar-Container-"][data-xp-ring^="c-"] {
-  border-radius: 50%;
-  outline: 2px solid var(--xp-pc);
-  outline-offset: 2px;
+/* Drawn inside the photo's own shape element ([data-xp-avshape], found by JS):
+   it follows round and square photos exactly and is never clipped by X's
+   layout. A thin page-coloured line separates the ring from the image. */
+:root.xp-peopleRings [data-xp-ring]:not([data-xp-ring^="c-"]) [data-xp-avshape]::after,
+:root.xp-customLabels [data-xp-ring^="c-"] [data-xp-avshape]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 var(--xp-ring-w, 2.5px) var(--xp-pc),
+    inset 0 0 0 calc(var(--xp-ring-w, 2.5px) + 1.5px) var(--xp-page);
+  pointer-events: none;
 }
-/* Mutual: gold ring inside the green one */
-:root.xp-peopleRings [data-testid^="UserAvatar-Container-"][data-xp-ring="mutual"] {
-  box-shadow: 0 0 0 2px var(--xp-gold);
-  outline-offset: 2px;
+/* Mutual: green outer ring, gold inner ring */
+:root.xp-peopleRings [data-xp-ring="mutual"]:not([data-xp-ring^="c-"]) [data-xp-avshape]::after {
+  box-shadow:
+    inset 0 0 0 2.5px var(--xp-green),
+    inset 0 0 0 5px var(--xp-gold),
+    inset 0 0 0 6.5px var(--xp-page);
 }
+/* Small photos (replies, sidebar, notifications) get a slimmer ring */
+:root [data-testid^="UserAvatar-Container-"][style*="width: 32px"],
+:root [data-testid^="UserAvatar-Container-"][style*="width: 24px"] { --xp-ring-w: 2px; }
 
 /* ---- Tag attached to the bottom of the ring (tweets) ---------------------- */
 .xp-ptag { display: none; }
+:root.xp-peopleRings .xp-ptag[data-kind="following"],
 :root.xp-peopleRings .xp-ptag[data-kind="followed"],
+:root.xp-peopleRings .xp-ptag[data-kind="mutual"],
 :root.xp-customLabels .xp-ptag[data-kind^="c-"] {
   display: block;
 }
@@ -80,6 +95,9 @@
   box-shadow: 0 0 0 2px var(--xp-page); /* cut-out so it sits cleanly on the ring */
 }
 .xp-ptag[data-kind="c-yellow"], .xp-ptag[data-kind="c-gray"] { color: #111; }
+.xp-ptag[data-kind="following"] { color: #2b1d00; }
+/* Mutual: the tag carries both colours, like the ring */
+.xp-ptag[data-kind="mutual"] { background: linear-gradient(90deg, var(--xp-gold) 0 50%, var(--xp-green) 50% 100%); color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.35); }
 .xp-ptag[hidden] { display: none !important; }
 
 /* ---- Post tint ------------------------------------------------------------- */
@@ -90,7 +108,6 @@
     color-mix(in srgb, var(--xp-pc) var(--xp-tint), transparent),
     transparent 70%
   ) !important;
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--xp-pc) 70%, transparent);
 }
 
 /* ---- Label button --------------------------------------------------------- */

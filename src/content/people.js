@@ -22,9 +22,9 @@ const xpPeople = (() => {
     if (l) return { ring: `c-${l.color}`, tag: l.text || null, tagKind: `c-${l.color}` };
     const r = rel.get(h);
     if (!r) return null;
-    if (r.following && r.followedBy) return { ring: "mutual", tag: "Follows you", tagKind: "followed" };
+    if (r.following && r.followedBy) return { ring: "mutual", tag: "Mutual", tagKind: "mutual" };
     if (r.followedBy) return { ring: "followed", tag: "Follows you", tagKind: "followed" };
-    if (r.following) return { ring: "following", tag: null, tagKind: null };
+    if (r.following) return { ring: "following", tag: "Following", tagKind: "following" };
     return null;
   }
 
@@ -34,9 +34,35 @@ const xpPeople = (() => {
   }
 
   // ---- Avatars everywhere (tweets, hover cards, sidebar, notifications) -----
+  // The ring is drawn INSIDE the element that gives the photo its shape
+  // (rounded + clipped for people, clip-path square for organisations), so
+  // it follows the real shape and can't be cut off by X's surrounding layout.
+  function shapeOf(container) {
+    if (container.__xpShape?.isConnected) return container.__xpShape;
+    let found = null;
+    const walk = (el, depth) => {
+      if (found || depth > 6) return;
+      for (const child of el.children) {
+        const cs = getComputedStyle(child);
+        const clips = cs.overflow === "hidden" || cs.clipPath !== "none";
+        if (clips && (parseFloat(cs.borderTopLeftRadius) > 0 || cs.clipPath !== "none")) {
+          found = child;
+          return;
+        }
+        walk(child, depth + 1);
+      }
+    };
+    walk(container, 0);
+    container.__xpShape = found;
+    return found;
+  }
+
   function avatar(el) {
     const look = lookFor(handleOfAvatar(el));
     setAttr(el, "data-xp-ring", look?.ring ?? null);
+    if (!look) return;
+    const shape = shapeOf(el);
+    if (shape && !shape.hasAttribute("data-xp-avshape")) xpDom.mark(shape, "avshape");
   }
 
   // ---- Tweets: tag under the avatar, tint, label button ---------------------
