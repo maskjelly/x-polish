@@ -1,7 +1,10 @@
 /* ==========================================================================
-   Profile hover card: brushed-metal frame, glint, glass body.
-   Applies to [data-xp-hovercard] boxes that contain a profile (not cashtag
-   cards), detected with :has() so it works even while the card loads.
+   Profile hover card.
+
+   One clean frame: flat surface, a single soft elevation, and a thin metal
+   edge with a slow glint (the one effect asked for). Everything inside the
+   card (photo, name, bio, counts, buttons) stays exactly as X renders it.
+   Only profile cards are styled, not cashtag cards.
    ========================================================================== */
 
 @property --xp-glint {
@@ -11,158 +14,78 @@
 }
 
 :root {
-  --xp-hc-radius: 20px;
-  --xp-hc-bg-top: #ffffff;
-  --xp-hc-bg-bottom: #f4f6f8;
-  --xp-hc-glow: rgba(29, 155, 240, 0.14);
+  --xp-hc-radius: 18px;
+  --xp-hc-bg: #ffffff;
   --xp-hc-shadow:
-    0 1px 1px rgba(15, 20, 25, 0.04),
-    0 8px 20px -6px rgba(15, 20, 25, 0.18),
-    0 24px 48px -12px rgba(15, 20, 25, 0.22);
-  /* Metal: cool silver with darker steel bands */
-  --xp-metal-1: #ffffff;
-  --xp-metal-2: #b4bec8;
-  --xp-metal-3: #6f7b88;
-  --xp-metal-4: #e9eef2;
-  --xp-hc-stat-bg: rgba(15, 20, 25, 0.045);
-  --xp-hc-stat-border: rgba(15, 20, 25, 0.08);
+    0 1px 2px rgba(15, 20, 25, 0.06),
+    0 14px 36px -12px rgba(15, 20, 25, 0.22);
+  /* Metal edge: soft silver with a brighter glint */
+  --xp-metal-base: rgba(15, 20, 25, 0.14);
+  --xp-metal-mid: rgba(140, 152, 165, 0.55);
+  --xp-metal-glint: rgba(255, 255, 255, 1);
 }
-
 :root.xp-dark {
-  --xp-hc-bg-top: #1a1d22;
-  --xp-hc-bg-bottom: #0d0f12;
-  --xp-hc-glow: rgba(29, 155, 240, 0.2);
+  --xp-hc-bg: #101215;
   --xp-hc-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.4),
-    0 10px 24px -6px rgba(0, 0, 0, 0.65),
-    0 30px 60px -12px rgba(0, 0, 0, 0.7);
-  --xp-metal-1: #f5f7fa;
-  --xp-metal-2: #9aa5b1;
-  --xp-metal-3: #3d444d;
-  --xp-metal-4: #c3ccd5;
-  --xp-hc-stat-bg: rgba(255, 255, 255, 0.05);
-  --xp-hc-stat-border: rgba(255, 255, 255, 0.08);
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 16px 40px -12px rgba(0, 0, 0, 0.75);
+  --xp-metal-base: rgba(255, 255, 255, 0.1);
+  --xp-metal-mid: rgba(170, 182, 195, 0.45);
+  --xp-metal-glint: rgba(255, 255, 255, 0.85);
 }
 
-/* Only profile cards: they link to following/followers or show a profile photo */
+/* Profile cards only: they link to following/followers or show a profile photo */
 :root.xp-profileCards [data-xp-hovercard]:has(a[href$="/following"], a[href$="/verified_followers"], a[href$="/followers"], img[src*="profile_images"]) {
-  --xp-hc: 1;
+  border: 0 !important;
   border-radius: var(--xp-hc-radius) !important;
-  border-color: transparent !important;
-  background:
-    radial-gradient(120% 70% at 0% 0%, var(--xp-hc-glow), transparent 60%),
-    linear-gradient(180deg, var(--xp-hc-bg-top), var(--xp-hc-bg-bottom)) !important;
+  background: var(--xp-hc-bg) !important;
   box-shadow: var(--xp-hc-shadow) !important;
-  isolation: isolate;
   overflow: hidden;
-  animation: xp-hc-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  isolation: isolate;
+  animation: xp-hc-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* X's inner layers: flatten, so only our frame draws the card */
+:root.xp-profileCards [data-xp-hovercard] [data-xp-hc-layer] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
 
-/* Brushed-metal border: a rotating conic gradient masked to a 1.5px ring.
-   The slow rotation moves a bright glint around the edge. */
+/* Metal edge: a 1px ring; a narrow bright band slowly travels around it */
 :root.xp-profileCards [data-xp-hovercard]:has(a[href$="/following"], a[href$="/verified_followers"], a[href$="/followers"], img[src*="profile_images"])::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 2;
-  padding: 1.75px;
+  padding: 1px;
   border-radius: inherit;
-  background: conic-gradient(
-    from var(--xp-glint),
-    var(--xp-metal-3) 0deg,
-    var(--xp-metal-2) 40deg,
-    var(--xp-metal-1) 70deg,
-    var(--xp-metal-2) 100deg,
-    var(--xp-metal-3) 150deg,
-    var(--xp-metal-4) 200deg,
-    var(--xp-metal-3) 240deg,
-    var(--xp-metal-2) 290deg,
-    var(--xp-metal-1) 320deg,
-    var(--xp-metal-3) 360deg
-  );
+  background:
+    conic-gradient(
+      from var(--xp-glint),
+      transparent 0deg,
+      var(--xp-metal-mid) 20deg,
+      var(--xp-metal-glint) 36deg,
+      var(--xp-metal-mid) 52deg,
+      transparent 75deg,
+      transparent 360deg
+    ),
+    linear-gradient(var(--xp-metal-base), var(--xp-metal-base));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: xp-glint 7s linear infinite;
-  pointer-events: none;
-}
-
-/* Sheen: one soft diagonal sweep of light when the card opens */
-:root.xp-profileCards [data-xp-hovercard]:has(a[href$="/following"], a[href$="/verified_followers"], a[href$="/followers"], img[src*="profile_images"])::after {
-  content: "";
-  position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: 0;
-  width: 45%;
-  z-index: 3;
-  background: linear-gradient(
-    105deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.10) 45%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.10) 55%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-130%) skewX(-12deg);
-  animation: xp-sheen 1100ms 120ms cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+  animation: xp-glint 9s linear infinite;
   pointer-events: none;
 }
 
 @keyframes xp-glint { to { --xp-glint: 360deg; } }
-@keyframes xp-sheen { to { transform: translateX(330%) skewX(-12deg); } }
 @keyframes xp-hc-in {
-  /* translate/scale (not transform) so we never fight the popup's own positioning */
-  from { opacity: 0; translate: 0 4px; scale: 0.985; }
-  to   { opacity: 1; translate: 0 0; scale: 1; }
-}
-
-/* ---- Inside the card -------------------------------------------------------- */
-/* Profile photo: shape-agnostic metal rim + lift (works for round and square avatars) */
-:root.xp-profileCards [data-xp-hovercard] [data-testid^="UserAvatar-Container"],
-:root.xp-profileCards [data-xp-hovercard] img[src*="profile_images"] {
-  filter:
-    drop-shadow(0 0 0.5px var(--xp-metal-1))
-    drop-shadow(0 0 1px var(--xp-metal-2))
-    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
-}
-
-/* Following / Followers: tidy stat pills */
-:root.xp-profileCards [data-xp-hovercard] a[href$="/following"],
-:root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"],
-:root.xp-profileCards [data-xp-hovercard] a[href$="/followers"] {
-  display: inline-flex !important;
-  align-items: baseline;
-  gap: 0.3em;
-  padding: 0.3em 0.7em;
-  margin-right: 0.4em;
-  border-radius: 999px;
-  background: var(--xp-hc-stat-bg);
-  border: 1px solid var(--xp-hc-stat-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  text-decoration: none !important;
-  transition: background 150ms ease;
-}
-:root.xp-profileCards [data-xp-hovercard] a[href$="/following"]:hover,
-:root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"]:hover,
-:root.xp-profileCards [data-xp-hovercard] a[href$="/followers"]:hover {
-  background: var(--xp-hc-stat-border);
-}
-
-/* Buttons (Follow / Following): glossy finish on top of X's own colors */
-:root.xp-profileCards [data-xp-hovercard] button,
-:root.xp-profileCards [data-xp-hovercard] [role="button"] {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 1px 2px rgba(0, 0, 0, 0.18),
-    0 4px 10px -4px rgba(0, 0, 0, 0.3) !important;
+  /* translate/scale (not transform) so we never fight the popup's positioning */
+  from { opacity: 0; translate: 0 3px; }
+  to   { opacity: 1; translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-xp-hovercard]::before,
-  [data-xp-hovercard]::after,
-  [data-xp-hovercard] { animation: none !important; }
-  [data-xp-hovercard]::after { display: none; }
+  [data-xp-hovercard], [data-xp-hovercard]::before { animation: none !important; }
 }
