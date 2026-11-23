@@ -73,26 +73,31 @@
 :root.xp-customLabels .xp-ptag[data-kind^="c-"] {
   display: block;
 }
+/* The tag stays inside the avatar column: centred under the photo and never
+   wider than the photo plus 8px each side, which is inside the gap before
+   the tweet text. Long custom labels end with an ellipsis. */
 .xp-ptag:not(.xp-ptag-inline) {
   position: absolute;
-  top: 35px;             /* 40px avatar, overlaps the ring's bottom edge */
-  left: 20px;
+  top: 33px;             /* 40px avatar: overlaps the bottom of the ring */
+  left: 50%;
   translate: -50% 0;
   z-index: 1;
-  max-width: 72px;
+  box-sizing: border-box;
+  max-width: calc(100% + 16px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
   pointer-events: none;
 }
 .xp-ptag {
-  padding: 2px 5px;
+  padding: 2px 3px;
   border-radius: 999px;
   background: var(--xp-pc);
   color: #fff;
-  font: 700 9.5px/1.1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  letter-spacing: 0.01em;
-  box-shadow: 0 0 0 2px var(--xp-page); /* cut-out so it sits cleanly on the ring */
+  font: 700 8px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.01em;
+  box-shadow: 0 0 0 1.5px var(--xp-page); /* cut-out so it sits cleanly on the ring */
 }
 .xp-ptag[data-kind="c-yellow"], .xp-ptag[data-kind="c-gray"] { color: #111; }
 .xp-ptag[data-kind="following"] { color: #2b1d00; }
