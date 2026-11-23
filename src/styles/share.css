@@ -1,1 +1,252 @@
-/* share feature styles */
+/* ==========================================================================
+   Share as image: action-bar button + modal with live preview.
+   ========================================================================== */
+
+:root {
+  --xp-sh-surface: #ffffff;
+  --xp-sh-ink: #0f1419;
+  --xp-sh-ink-2: #536471;
+  --xp-sh-line: rgba(15, 20, 25, 0.1);
+  --xp-sh-well: #f2f4f6;
+  --xp-sh-hover: rgba(15, 20, 25, 0.06);
+  --xp-sh-primary-bg: #0f1419;
+  --xp-sh-primary-fg: #ffffff;
+  --xp-sh-backdrop: rgba(15, 20, 25, 0.45);
+  --xp-sh-shadow: 0 24px 64px -16px rgba(15, 20, 25, 0.35);
+  --xp-sh-focus: #1d9bf0;
+}
+:root.xp-dark {
+  --xp-sh-surface: #16181c;
+  --xp-sh-ink: #e7e9ea;
+  --xp-sh-ink-2: #8b98a5;
+  --xp-sh-line: rgba(255, 255, 255, 0.1);
+  --xp-sh-well: #0d0f12;
+  --xp-sh-hover: rgba(255, 255, 255, 0.07);
+  --xp-sh-primary-bg: #eff3f4;
+  --xp-sh-primary-fg: #0f1419;
+  --xp-sh-backdrop: rgba(91, 112, 131, 0.4);
+  --xp-sh-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.8);
+}
+
+/* ---- Action bar button (looks like X's own action icons) ------------------ */
+.xp-share-slot { display: none; }
+:root.xp-shareImage .xp-share-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.xp-share-trigger {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(113, 118, 123);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.xp-share-trigger svg {
+  width: 18.75px;
+  height: 18.75px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.xp-share-trigger:hover { background: rgba(29, 155, 240, 0.1); color: rgb(29, 155, 240); }
+.xp-share-trigger:focus-visible { outline: 2px solid var(--xp-sh-focus); outline-offset: 1px; }
+
+/* ---- Modal ------------------------------------------------------------------ */
+.xp-share-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--xp-sh-backdrop);
+  animation: xp-share-fade 140ms ease;
+}
+.xp-share-backdrop[hidden] { display: none; }
+:root.xp-share-open body { overflow: hidden; }
+
+.xp-share {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: min(620px, 100%);
+  max-height: calc(100vh - 32px);
+  border-radius: 20px;
+  border: 1px solid var(--xp-sh-line);
+  background: var(--xp-sh-surface);
+  color: var(--xp-sh-ink);
+  box-shadow: var(--xp-sh-shadow);
+  font: 15px/1.3 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  animation: xp-share-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.xp-share *, .xp-share *::before { box-sizing: border-box; }
+.xp-share svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+.xp-share-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px 20px;
+}
+.xp-share-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+.xp-share-x {
+  display: grid; place-items: center;
+  width: 34px; height: 34px; padding: 0;
+  border: 0; border-radius: 999px;
+  background: transparent; color: var(--xp-sh-ink-2);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.xp-share-x svg { width: 18px; height: 18px; }
+.xp-share-x:hover { background: var(--xp-sh-hover); color: var(--xp-sh-ink); }
+
+.xp-share-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  margin: 0 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--xp-sh-well);
+  overflow: auto;
+}
+.xp-share-img {
+  display: block;
+  max-width: 100%;
+  max-height: min(58vh, 560px);
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  transition: opacity 150ms ease;
+}
+.xp-share-img[hidden] { display: none; }
+.xp-share-busy .xp-share-img { opacity: 0.55; }
+.xp-share-loading {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 14px; height: 14px;
+  border: 2px solid var(--xp-sh-line);
+  border-top-color: var(--xp-sh-ink-2);
+  border-radius: 50%;
+  opacity: 0;
+  animation: xp-share-spin 0.8s linear infinite;
+}
+.xp-share-busy .xp-share-loading { opacity: 1; }
+
+.xp-share-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 20px 4px;
+}
+.xp-share-themes { display: flex; gap: 8px; }
+.xp-share-theme {
+  width: 28px; height: 28px; padding: 0;
+  border: 0; border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.xp-share-theme:hover { transform: scale(1.08); }
+.xp-share-theme[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--xp-sh-surface), 0 0 0 4px var(--xp-sh-ink);
+}
+.xp-share-theme:focus-visible { outline: 2px solid var(--xp-sh-focus); outline-offset: 4px; }
+
+.xp-share-toggles { display: flex; gap: 6px; }
+.xp-share-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--xp-sh-line);
+  border-radius: 999px;
+  color: var(--xp-sh-ink-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.xp-share-check[hidden] { display: none; }
+.xp-share-check input { position: absolute; opacity: 0; pointer-events: none; }
+.xp-share-check span::before {
+  content: "";
+  display: inline-block;
+  width: 7px; height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  vertical-align: 1px;
+}
+.xp-share-check:hover { background: var(--xp-sh-hover); }
+.xp-share-check:has(input:checked) { color: var(--xp-sh-ink); border-color: var(--xp-sh-ink-2); }
+.xp-share-check:has(input:checked) span::before { background: currentColor; }
+.xp-share-check:has(input:focus-visible) { outline: 2px solid var(--xp-sh-focus); outline-offset: 2px; }
+
+.xp-share-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px 18px;
+}
+.xp-share-status { margin-right: auto; color: var(--xp-sh-ink-2); font-size: 13.5px; font-weight: 500; }
+.xp-share-actions button {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 120ms ease, filter 120ms ease, opacity 120ms ease;
+}
+.xp-share-actions button:disabled { opacity: 0.45; cursor: default; }
+.xp-share-btn-secondary {
+  border: 1px solid var(--xp-sh-line);
+  background: transparent;
+  color: var(--xp-sh-ink);
+}
+.xp-share-btn-secondary:hover:not(:disabled) { background: var(--xp-sh-hover); }
+.xp-share-btn-primary {
+  border: 0;
+  background: var(--xp-sh-primary-bg);
+  color: var(--xp-sh-primary-fg);
+}
+.xp-share-btn-primary:hover:not(:disabled) { filter: brightness(0.9); }
+:root.xp-dark .xp-share-btn-primary:hover:not(:disabled) { filter: brightness(0.92); }
+.xp-share-x:focus-visible,
+.xp-share-actions button:focus-visible { outline: 2px solid var(--xp-sh-focus); outline-offset: 2px; }
+
+@media (max-width: 520px) {
+  .xp-share-controls { flex-direction: column; align-items: flex-start; }
+  .xp-share-actions { flex-wrap: wrap; }
+}
+
+@keyframes xp-share-fade { from { opacity: 0; } }
+@keyframes xp-share-in { from { opacity: 0; translate: 0 6px; scale: 0.985; } }
+@keyframes xp-share-spin { to { rotate: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-share-backdrop, .xp-share { animation: none; }
+  .xp-share-theme, .xp-share-img { transition: none; }
+}

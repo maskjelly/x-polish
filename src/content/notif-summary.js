@@ -213,6 +213,7 @@ const xpNotifSummary = (() => {
         </div>
         <div class="xp-ns-actions">
           ${m.total ? peak : ""}
+          ${m.total ? `<button type="button" class="xp-ns-share" aria-label="Share as image" title="Share as image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.8"/><path d="M20.5 15.5l-4.6-4.6L7 19"/></svg></button>` : ""}
           ${m.total ? `<button type="button" class="xp-ns-toggle" aria-expanded="${!collapsed}" aria-label="${collapsed ? "Show" : "Hide"} details">${icon("chevron")}</button>` : ""}
         </div>
       </header>
@@ -273,6 +274,11 @@ const xpNotifSummary = (() => {
     panel.setAttribute("aria-label", "Notifications summary, last 24 hours");
 
     panel.addEventListener("click", (e) => {
+      const share = e.target.closest(".xp-ns-share");
+      if (share && model) {
+        xpShare.summary({ ...model, peakLabel: model.peak >= 0 ? hourFmt.format(hourStart(model, model.peak)) : null }, share);
+        return;
+      }
       if (!e.target.closest(".xp-ns-toggle")) return;
       collapsed = !collapsed;
       try { chrome.storage.local.set({ xpNotifSummaryCollapsed: collapsed }); } catch {}
