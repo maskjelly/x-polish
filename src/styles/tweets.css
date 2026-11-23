@@ -44,15 +44,20 @@
   display: none !important;
 }
 
-/* ---- Sponsored posts: thin bevelled gold ring + "Sponsored" tag ------------
-   Uses the data-xp-ad marker from src/content/ads.js. Only visible when
-   "Block ads" is off (with it on, ads are removed instead). */
-:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] > div { border-bottom-color: transparent !important; }
+/* ---- Sponsored & paid partnership posts: thin bevelled gold ring + tag ------
+   Promoted ads use the data-xp-ad marker from src/content/ads.js and only show
+   when "Block ads" is off (otherwise they are removed). "Paid partnership"
+   posts (data-xp-paid, src/content/paid.js) are not ads and always get it. */
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] > div,
+:root.xp-sponsoredRing [data-testid="cellInnerDiv"]:has(article[data-xp-paid]) > div {
+  border-bottom-color: transparent !important;
+}
 
-:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article {
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article,
+:root.xp-sponsoredRing article[data-xp-paid] {
   position: relative;
   isolation: isolate;
-  margin: 10px 10px 8px;
+  margin: 12px 10px 8px;
   border-radius: 16px;
   box-shadow:
     0 1px 2px rgba(120, 85, 20, 0.16),
@@ -60,7 +65,8 @@
 }
 
 /* The ring: a 1.5px band whose gradient reads as light catching a gold edge */
-:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::before {
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::before,
+:root.xp-sponsoredRing article[data-xp-paid]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -75,7 +81,8 @@
 }
 
 /* Tag sitting on the top edge of the ring */
-:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::after {
+:root.xp-sponsoredRing:not(.xp-blockAds) [data-xp-ad] article::after,
+:root.xp-sponsoredRing article[data-xp-paid]::after {
   content: "Sponsored";
   position: absolute;
   top: 0;
@@ -91,6 +98,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(90, 60, 10, 0.3);
   pointer-events: none;
 }
+:root.xp-sponsoredRing article[data-xp-paid]::after { content: "Paid partnership"; }
 
 /* ---- Community Notes: a soft light sweep every few seconds ---------------- */
 :root.xp-noteGlimmer [data-testid="birdwatch-pivot"] {

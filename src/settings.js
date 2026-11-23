@@ -16,7 +16,7 @@ const XP_SETTINGS = [
   { key: "betterType",     label: "Nicer typography",         default: false },
   { key: "hideMetrics",    label: "Hide view counts",         default: false },
   { key: "noteGlimmer",    label: "Glimmer on Community Notes", default: true },
-  { key: "sponsoredRing",  label: "Gold ring on sponsored posts", default: true },
+  { key: "sponsoredRing",  label: "Gold ring on sponsored & paid posts", default: true },
   { key: "blockAds",       label: "Block ads (Promoted)",     default: true },
   { key: "hideSidebar",    label: "Hide right sidebar",       default: false },
 ];

@@ -51,6 +51,7 @@
         "src/content/label-editor.js",
         "src/content/people.js",
         "src/content/notif-summary.js",
+        "src/content/paid.js",
         "src/content/content.js"
       ],
       "run_at": "document_start"

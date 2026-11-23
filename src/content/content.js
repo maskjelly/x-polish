@@ -55,6 +55,7 @@
     { selector: XP_SEL.notification, run: xpSurfaces.notification },
     { selector: xpPeople.AVATAR, run: xpPeople.avatar },
     { selector: XP_SEL.tweet, run: xpPeople.tweet },
+    { selector: XP_SEL.tweet, run: xpPaid.tweet },
     { selector: XP_SEL.profileName, run: xpPeople.profileHeader },
   ];
 
