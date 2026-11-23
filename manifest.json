@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "X Polish",
+  "version": "0.1.0",
+  "description": "Make Twitter / X look cleaner and tweets look better.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "X Polish"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "css": ["src/styles/base.css", "src/styles/tweets.css"],
+      "js": ["src/settings.js", "src/content/selectors.js", "src/content/content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

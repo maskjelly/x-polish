@@ -1,0 +1,24 @@
+/* Design tokens. Tweak these to restyle everything at once. */
+:root.xp-on {
+  --xp-radius: 16px;
+  --xp-radius-media: 14px;
+  --xp-gap: 10px;
+  --xp-card-bg: rgba(127, 127, 127, 0.04);
+  --xp-card-border: rgba(127, 127, 127, 0.18);
+  --xp-card-hover: rgba(127, 127, 127, 0.08);
+  --xp-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.05);
+  --xp-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --xp-text-size: 15.5px;
+  --xp-line-height: 1.5;
+  --xp-transition: 160ms ease;
+}
+
+/* Layout tweaks */
+:root.xp-hideSidebar [data-testid="sidebarColumn"] {
+  display: none !important;
+}
+
+/* Promoted tweets */
+:root.xp-hidePromoted .xp-promoted {
+  display: none !important;
+}
