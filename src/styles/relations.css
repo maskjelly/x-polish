@@ -1,0 +1,33 @@
+/* "Follows you" / "You follow" pill on its own line under the author name */
+:root {
+  --xp-rel-fill: rgba(15, 20, 25, 0.05);
+  --xp-rel-border: rgba(15, 20, 25, 0.08);
+  --xp-rel-fg: #536471;
+}
+:root.xp-dark {
+  --xp-rel-fill: rgba(255, 255, 255, 0.06);
+  --xp-rel-border: rgba(255, 255, 255, 0.08);
+  --xp-rel-fg: #8b98a5;
+}
+
+.xp-rel { display: none; }
+
+:root.xp-relationBadges [data-xp-has-rel] { flex-wrap: wrap; }
+:root.xp-relationBadges .xp-rel {
+  display: flex;
+  flex-basis: 100%;
+  margin-top: 3px;
+}
+:root.xp-relationBadges .xp-rel-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--xp-rel-border);
+  background: var(--xp-rel-fill);
+  color: var(--xp-rel-fg);
+  font: 600 11.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}

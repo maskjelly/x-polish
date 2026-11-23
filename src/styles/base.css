@@ -17,8 +17,10 @@
   display: none !important;
 }
 
-/* Promoted tweets */
-:root.xp-hidePromoted [data-xp-promoted] {
+/* Ads: promoted tweets, trends, users and headings.
+   Entries are filtered from X's API before render (src/page/adblock.js); this
+   hides anything that still slips through (src/content/ads.js). */
+:root.xp-blockAds [data-xp-ad] {
   display: none !important;
 }
 

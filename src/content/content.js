@@ -34,14 +34,9 @@
     tweet.dataset.xpDone = "1";
     tweet.setAttribute("data-xp-tweet", "");
 
-    // Mark promoted tweets (X labels them with an "Ad"/"Promoted" span)
-    const isPromoted = [...tweet.querySelectorAll("span")].some(
-      (s) => s.textContent === "Ad" || s.textContent === "Promoted"
-    );
-    if (isPromoted) tweet.closest(XP_SEL.cellInner)?.setAttribute("data-xp-promoted", "");
-
     if (tweet.querySelector(XP_SEL.media)) tweet.setAttribute("data-xp-media", "");
 
+    xpAds.tweet(tweet);
     xpApi.harvestAuthor(tweet);
   }
 
@@ -50,12 +45,15 @@
   // must be idempotent: X re-renders nodes and we may see them again.
   const ENHANCERS = [
     { selector: XP_SEL.tweet, run: processTweet },
+    { selector: XP_SEL.adRows, run: xpAds.module },
+    { selector: "h2", run: xpAds.heading },
     { selector: XP_SEL.cashtag, run: xpChips.cashtag },
     { selector: XP_SEL.mention, run: xpChips.mention },
     { selector: XP_SEL.hoverCard, run: xpHoverCard.mark },
     { selector: XP_SEL.sidebarSection, run: xpSurfaces.sidebarPanel },
     { selector: XP_SEL.composerToolbar, run: xpSurfaces.composer },
     { selector: XP_SEL.notification, run: xpSurfaces.notification },
+    { selector: `${XP_SEL.tweet} ${XP_SEL.userName}`, run: xpRelations.badge },
   ];
 
   function scan(node = document) {
@@ -65,6 +63,11 @@
       if (node.matches?.(selector)) run(node);
       node.querySelectorAll?.(selector).forEach(run);
     }
+    // X may add the "Ad" label after the tweet/row itself is in the DOM.
+    const tweet = node.closest?.(XP_SEL.tweet);
+    if (tweet) xpAds.tweet(tweet);
+    const row = node.closest?.(XP_SEL.adRows);
+    if (row) xpAds.module(row);
   }
 
   // X is a SPA with infinite scroll: watch for new nodes and batch per frame.
