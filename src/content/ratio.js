@@ -1,17 +1,16 @@
 // Ratio meter: engagement rate on each post, read from the post's own action
 // bar. X labels the bar for screen readers, e.g.
 //   "36 replies, 4 reposts, 483 likes, 2 bookmarks, 19037 views"
-// We parse that (English; other languages simply show nothing), then show the
-// percentage next to the views count with a 2px meter under it (no extra
-// width, so the bar never crowds), and a "Ratioed" / "Hot" badge in the
-// post's header after the time, where there is room.
+// We parse that (English; other languages simply show nothing) and show ONE
+// small pill in the post header after the time: "2.8%", "Hot · 13%" or
+// "Ratioed · 1.7%". Nothing is ever inserted into X's action bar, whose
+// spacing X controls precisely.
 //
 //   rate    = (likes + reposts + replies + bookmarks) / views
 //   Ratioed = replies > likes and replies >= 20
 //   Hot     = rate >= 5% and views >= 1000
 
 const xpRatio = (() => {
-  const FULL_AT = 10; // percent that fills the meter
   const watched = new WeakSet();
 
   function num(s) {
@@ -57,68 +56,57 @@ const xpRatio = (() => {
 
   const fmt = new Intl.NumberFormat("en-US");
 
-  function build() {
-    const el = document.createElement("span");
-    el.className = "xp-ratio";
-    el.innerHTML =
-      '<span class="xp-ratio-pct"></span>' +
-      '<span class="xp-ratio-meter" aria-hidden="true"><i></i></span>';
-    return el;
+  // The post's own header line (name · handle · time), not a quoted post's.
+  function headerOf(article) {
+    const h = article.querySelector('[data-testid="User-Name"]');
+    return h && h.closest('article[data-testid="tweet"]') === article ? h : null;
   }
 
-  // "Hot" / "Ratioed" badge at the end of the post's header line.
-  function setBadge(article, level) {
-    const header = article.querySelector('[data-testid="User-Name"]');
-    if (!header || header.closest('article[data-testid="tweet"]') !== article) return;
-    let b = header.querySelector(":scope > .xp-ratio-badge");
-    if (level === "normal") { b?.remove(); return; }
-    if (!b) {
-      b = document.createElement("span");
-      b.className = "xp-ratio-badge";
-      header.appendChild(b);
+  // Order in the header: time → account tag (accounts.js) → ratio pill →
+  // label button. Re-applied whenever the header's children change.
+  // Only moves the pill when it is out of place, so the header observer
+  // below never loops.
+  function place(header, pill) {
+    const acct = header.querySelector(":scope > .xp-acct-tag");
+    if (acct) {
+      if (pill.parentNode !== header || pill.previousSibling !== acct) acct.after(pill);
+      return;
     }
-    b.dataset.level = level;
-    b.textContent = level === "hot" ? "Hot" : "Ratioed";
-    b.title = level === "hot" ? "Hot: 5%+ of viewers engaged" : "Ratioed: more replies than likes";
+    const btn = header.querySelector(":scope > .xp-label-btn");
+    if (pill.parentNode === header && (btn ? pill.nextSibling === btn : !pill.nextSibling)) return;
+    if (btn) header.insertBefore(pill, btn);
+    else header.appendChild(pill);
   }
 
   function render(article, bar) {
+    const header = headerOf(article);
+    if (!header) return;
+    let pill = header.querySelector(":scope > .xp-ratio-pill");
     const m = parse(bar.getAttribute("aria-label"));
-    let el = bar.querySelector(".xp-ratio");
-    if (!m || !m.views) { el?.remove(); setBadge(article, "normal"); return; }
+    if (!m || !m.views) { pill?.remove(); return; }
 
     const engaged = m.likes + m.reposts + m.replies + m.bookmarks;
     const rate = (engaged / m.views) * 100;
     const ratioed = m.replies > m.likes && m.replies >= 20;
     const hot = !ratioed && rate >= 5 && m.views >= 1000;
-
-    if (!el) {
-      el = build();
-      // Next to the views count when the bar has one, else at the end.
-      const views = bar.querySelector('a[href$="/analytics"]');
-      const slot = views?.parentElement && views.parentElement !== bar ? views.parentElement : null;
-      if (slot) {
-        slot.setAttribute("data-xp-ratio-slot", "");
-        slot.appendChild(el);
-      } else {
-        bar.appendChild(el);
-      }
-    }
-
+    const level = ratioed ? "ratioed" : hot ? "hot" : "normal";
     const pct = rate >= 100 ? "100%+" : `${rate < 10 ? rate.toFixed(1) : Math.round(rate)}%`;
-    el.querySelector(".xp-ratio-pct").textContent = pct;
-    el.querySelector(".xp-ratio-meter i").style.width = `${Math.min(100, (rate / FULL_AT) * 100).toFixed(1)}%`;
+    const text = level === "hot" ? `Hot · ${pct}` : level === "ratioed" ? `Ratioed · ${pct}` : pct;
 
-    el.dataset.level = ratioed ? "ratioed" : hot ? "hot" : "normal";
-    setBadge(article, el.dataset.level);
-
-    el.title =
+    if (!pill) {
+      pill = document.createElement("span");
+      pill.className = "xp-ratio-pill";
+    }
+    place(header, pill);
+    if (pill.textContent !== text) pill.textContent = text;
+    pill.dataset.level = level;
+    pill.title =
       `Engagement rate ${rate.toFixed(2)}%\n` +
       `${fmt.format(engaged)} interactions / ${fmt.format(m.views)} views\n` +
       `${fmt.format(m.likes)} likes · ${fmt.format(m.reposts)} reposts · ` +
       `${fmt.format(m.replies)} replies · ${fmt.format(m.bookmarks)} bookmarks` +
-      (ratioed ? "\nRatioed: more replies than likes" : hot ? "\nHot: 5%+ engagement" : "");
-    el.setAttribute("aria-label", `Engagement rate ${pct}${ratioed ? ", ratioed" : hot ? ", hot" : ""}`);
+      (ratioed ? "\nRatioed: more replies than likes" : hot ? "\nHot: 5%+ of viewers engaged" : "");
+    pill.setAttribute("aria-label", `Engagement rate ${pct}${ratioed ? ", ratioed" : hot ? ", hot" : ""}`);
   }
 
   function tweet(article) {
@@ -130,6 +118,15 @@ const xpRatio = (() => {
     if (!watched.has(bar)) {
       watched.add(bar);
       new MutationObserver(() => render(article, bar)).observe(bar, { attributes: true, attributeFilter: ["aria-label"] });
+    }
+    // Keep the pill after the account tag if that tag arrives later.
+    const header = headerOf(article);
+    if (header && !watched.has(header)) {
+      watched.add(header);
+      new MutationObserver(() => {
+        const pill = header.querySelector(":scope > .xp-ratio-pill");
+        if (pill) place(header, pill);
+      }).observe(header, { childList: true });
     }
   }
 
