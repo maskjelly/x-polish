@@ -139,7 +139,10 @@ const xpChips = (() => {
     xpApi.profile(handle).then((p) => {
       inner.classList.remove("xp-loading");
       if (!p) return; // keep @handle fallback
-      name.textContent = p.name || `@${handle}`;
+      // Shorten long names at a clean point (full name stays in the tooltip),
+      // so the verified seal sits right after the ellipsis.
+      const full = p.name || `@${handle}`;
+      name.textContent = full.length > 24 ? `${full.slice(0, 22).trimEnd()}…` : full;
       if (p.name) avatar.textContent = p.name.charAt(0).toUpperCase();
       link.title = `${p.name} @${p.handle}`;
       if (p.verified) inner.appendChild(verifiedBadge(p.verified));

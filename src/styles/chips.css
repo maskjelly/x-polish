@@ -23,6 +23,7 @@
   --xp-men-fg: #1a8cd8;
 
   --xp-letter-bg: #8b98a5;
+  --xp-img-ring: rgba(15, 20, 25, 0.1);   /* defines the edge of dark logos / photos */
 
   --xp-verified-individual: #1d9bf0;
   --xp-verified-business: #e2b719;
@@ -46,6 +47,7 @@
   --xp-men-fg: #4cb2f5;
 
   --xp-letter-bg: #3e4349;
+  --xp-img-ring: rgba(255, 255, 255, 0.16);
 }
 
 /* ---- Show badge or original text ----------------------------------------- */
@@ -66,9 +68,11 @@ a[data-xp-chip] { text-decoration: none !important; color: inherit !important; }
   align-items: center;
   gap: 0.42em;
   box-sizing: border-box;
-  height: 1.6em;
-  margin: 0 0.12em;
-  vertical-align: -0.3em;
+  /* Centred on the text line; the negative block margin keeps the chip from
+     making its line taller than the surrounding lines. */
+  height: 1.5em;
+  margin: -0.12em 0.12em;
+  vertical-align: middle;
   font-size: 0.9em;
   line-height: 1;
   font-weight: 700;
@@ -80,18 +84,19 @@ a[data-xp-chip] { text-decoration: none !important; color: inherit !important; }
 
 .xp-chip-inner img,
 .xp-letter {
-  width: 1.22em;
-  height: 1.22em;
+  width: 1.15em;
+  height: 1.15em;
   flex-shrink: 0;
   object-fit: cover;
+  box-shadow: 0 0 0 1px var(--xp-img-ring);
 }
 
 .xp-letter {
   display: inline-grid;
   place-items: center;
   font-size: 0.72em;
-  width: calc(1.22em / 0.72);
-  height: calc(1.22em / 0.72);
+  width: calc(1.15em / 0.72);
+  height: calc(1.15em / 0.72);
   font-weight: 700;
   color: #fff;
   background: var(--xp-letter-bg);
@@ -137,7 +142,7 @@ a[data-xp-chip="mention"]:hover > .xp-mention-inner {
 .xp-mention-inner .xp-letter { background: var(--xp-men-fg); }
 
 .xp-name {
-  max-width: 16em;
+  max-width: 15em;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-bottom: 0.05em; /* keep descenders inside the ellipsis box */
@@ -145,10 +150,10 @@ a[data-xp-chip="mention"]:hover > .xp-mention-inner {
 
 /* ---- Verified seal --------------------------------------------------------- */
 .xp-verified {
-  width: 1.1em;
-  height: 1.1em;
+  width: 1.05em;
+  height: 1.05em;
   flex-shrink: 0;
-  margin-left: -0.15em;
+  margin-left: -0.12em;
 }
 .xp-verified polygon { stroke-width: 1.2; }
 .xp-verified .xp-check {
