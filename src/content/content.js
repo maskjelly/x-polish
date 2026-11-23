@@ -12,6 +12,17 @@
     root.classList.toggle("xp-on", !!settings.enabled);
   }
 
+  // X has light / dim / lights-out themes. Expose dark vs light on <html>
+  // as xp-dark so badges can use matching colors.
+  function detectTheme() {
+    if (!document.body) return;
+    const m = getComputedStyle(document.body).backgroundColor.match(/\d+(\.\d+)?/g);
+    if (!m) return;
+    const [r, g, b, a = 1] = m.map(Number);
+    if (a === 0) return; // not painted yet
+    root.classList.toggle("xp-dark", 0.2126 * r + 0.7152 * g + 0.0722 * b < 128);
+  }
+
   // NOTE: never add classes to X's own elements. X's React code rewrites
   // their `class` attribute (e.g. on hover) and wipes ours. Use data-xp-*
   // attributes instead; classes are fine on <html> and on elements we create.
@@ -68,6 +79,9 @@
   });
 
   function start() {
+    detectTheme();
+    // X switches theme by restyling <body>; re-check when that happens.
+    new MutationObserver(detectTheme).observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
     scan();
     observer.observe(document.body, { childList: true, subtree: true });
   }

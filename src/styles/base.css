@@ -22,16 +22,3 @@
   display: none !important;
 }
 
-/* Badge tokens */
-:root.xp-on {
-  --xp-cash-bg: rgba(127, 127, 127, 0.14);
-  --xp-cash-border: rgba(127, 127, 127, 0.32);
-  --xp-up: #00ba7c;
-  --xp-down: #f4212e;
-  --xp-mention-bg: rgba(29, 155, 240, 0.12);
-  --xp-mention-border: rgba(29, 155, 240, 0.38);
-  --xp-mention-fg: rgb(29, 155, 240);
-  --xp-verified-individual: #1d9bf0;
-  --xp-verified-business: #e2b719;
-  --xp-verified-government: #829aab;
-}
