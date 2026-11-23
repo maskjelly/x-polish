@@ -30,6 +30,22 @@
     </div>
   </section>
 
+  <section class="group" id="shield" aria-labelledby="shield-title">
+    <h2 id="shield-title">Spoiler shield words <span class="count" id="shield-count"></span></h2>
+    <div class="card">
+      <form class="shield-add" id="shield-form" autocomplete="off">
+        <input id="shield-input" type="text" maxlength="40" placeholder="Add a word or phrase" aria-label="Word or phrase to hide" />
+        <button type="submit" id="shield-add-btn">Add</button>
+      </form>
+      <p class="shield-hint" id="shield-hint" aria-live="polite"></p>
+      <div class="empty" id="shield-empty">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c5 0 8.6 4.3 9.6 6.2a1.7 1.7 0 0 1 0 1.6 15 15 0 0 1-3.1 3.9M6.3 6.4A15.2 15.2 0 0 0 2.4 11.2a1.7 1.7 0 0 0 0 1.6C3.4 14.7 7 19 12 19a9.6 9.6 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+        <p>Posts mentioning these words are blurred until you click Show. Try a team, a show or a topic you're tired of.</p>
+      </div>
+      <ul id="shield-list" class="chips"></ul>
+    </div>
+  </section>
+
   <script src="../settings.js"></script>
   <script src="../labels.js"></script>
   <script src="popup.js"></script>

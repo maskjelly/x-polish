@@ -165,6 +165,75 @@ body.off main label.row:hover { background: transparent; }
 #people-list button:hover { background: var(--hover); color: var(--danger); }
 #people-list button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+/* ---- Spoiler shield words ---------------------------------------------------- */
+.shield-add {
+  display: flex; gap: 8px;
+  padding: 10px 10px 0;
+}
+.shield-add input {
+  flex: 1; min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+.shield-add input::placeholder { color: var(--muted); }
+.shield-add input:focus { border-color: var(--accent); }
+.shield-add button {
+  height: 34px; padding: 0 14px;
+  border: 0; border-radius: 999px;
+  background: var(--fg); color: var(--bg);
+  font: inherit; font-weight: 700;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+.shield-add button:hover { opacity: 0.88; }
+.shield-add button:disabled { opacity: 0.4; cursor: default; }
+.shield-add button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.shield-hint {
+  margin: 0; padding: 4px 12px 0;
+  min-height: 0;
+  color: var(--muted); font-size: 12px;
+}
+.shield-hint:empty { padding: 0; }
+
+#shield .empty { padding-top: 10px; }
+
+.chips {
+  list-style: none; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px;
+  max-height: 180px; overflow-y: auto;
+}
+.chips[hidden] { display: none; }
+.chips li {
+  display: inline-flex; align-items: center; gap: 2px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 3px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--hover);
+  font-size: 13px;
+}
+.chips li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chips button {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: 0; border-radius: 50%;
+  background: transparent; color: var(--muted);
+  font-size: 15px; line-height: 1; cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.chips button:hover { background: var(--line); color: var(--danger); }
+.chips button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }

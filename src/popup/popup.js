@@ -115,3 +115,73 @@ renderPeople();
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "sync" && Object.keys(changes).some((k) => k.startsWith(XP_LABEL_PREFIX))) renderPeople();
 });
+
+// ---- Spoiler shield words ---------------------------------------------------
+const SHIELD_KEY = "shieldWords";
+const SHIELD_MAX = 50;
+const shieldForm = document.getElementById("shield-form");
+const shieldInput = document.getElementById("shield-input");
+const shieldList = document.getElementById("shield-list");
+const shieldEmpty = document.getElementById("shield-empty");
+const shieldCount = document.getElementById("shield-count");
+const shieldHint = document.getElementById("shield-hint");
+const shieldAdd = document.getElementById("shield-add-btn");
+let shieldWords = [];
+
+function renderShield() {
+  shieldList.textContent = "";
+  shieldEmpty.hidden = shieldWords.length > 0;
+  shieldList.hidden = shieldWords.length === 0;
+  shieldCount.textContent = shieldWords.length ? String(shieldWords.length) : "";
+  for (const w of shieldWords) {
+    const li = document.createElement("li");
+    li.innerHTML = `<span></span><button type="button">×</button>`;
+    li.querySelector("span").textContent = w;
+    li.title = w;
+    const btn = li.querySelector("button");
+    btn.setAttribute("aria-label", `Remove “${w}”`);
+    btn.addEventListener("click", () => saveShield(shieldWords.filter((x) => x !== w)));
+    shieldList.appendChild(li);
+  }
+  shieldAdd.disabled = !shieldInput.value.trim();
+}
+
+function saveShield(words) {
+  shieldWords = words;
+  chrome.storage.sync.set({ [SHIELD_KEY]: words });
+  renderShield();
+}
+
+shieldInput.addEventListener("input", () => {
+  shieldHint.textContent = "";
+  shieldAdd.disabled = !shieldInput.value.trim();
+});
+
+shieldForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const w = shieldInput.value.trim().replace(/\s+/g, " ").slice(0, 40);
+  if (!w) return;
+  if (shieldWords.some((x) => x.toLowerCase() === w.toLowerCase())) {
+    shieldHint.textContent = `“${w}” is already on the list.`;
+    return;
+  }
+  if (shieldWords.length >= SHIELD_MAX) {
+    shieldHint.textContent = `You can hide up to ${SHIELD_MAX} words. Remove one to add another.`;
+    return;
+  }
+  shieldInput.value = "";
+  shieldHint.textContent = "";
+  saveShield([...shieldWords, w]);
+  shieldInput.focus();
+});
+
+chrome.storage.sync.get({ [SHIELD_KEY]: [] }, (v) => {
+  shieldWords = Array.isArray(v[SHIELD_KEY]) ? v[SHIELD_KEY] : [];
+  renderShield();
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && changes[SHIELD_KEY]) {
+    shieldWords = Array.isArray(changes[SHIELD_KEY].newValue) ? changes[SHIELD_KEY].newValue : [];
+    renderShield();
+  }
+});
