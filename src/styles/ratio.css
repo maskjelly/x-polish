@@ -1,1 +1,91 @@
-/* ratio feature styles */
+/* ==========================================================================
+   Ratio meter: tiny meter + engagement % next to the views count,
+   with "Ratioed" / "Hot" badges. Matches X's muted action-bar ink.
+   ========================================================================== */
+
+:root {
+  --xp-ratio-ink: #536471;
+  --xp-ratio-track: rgba(15, 20, 25, 0.1);
+  --xp-ratio-fill: #536471;
+  --xp-ratio-hot: #c2410c;
+  --xp-ratio-hot-bg: rgba(234, 88, 12, 0.1);
+  --xp-ratio-bad: #b4232f;
+  --xp-ratio-bad-bg: rgba(220, 38, 38, 0.09);
+}
+:root.xp-dark {
+  --xp-ratio-ink: #8b98a5;
+  --xp-ratio-track: rgba(255, 255, 255, 0.14);
+  --xp-ratio-fill: #8b98a5;
+  --xp-ratio-hot: #fb923c;
+  --xp-ratio-hot-bg: rgba(251, 146, 60, 0.13);
+  --xp-ratio-bad: #f87171;
+  --xp-ratio-bad-bg: rgba(248, 113, 113, 0.12);
+}
+
+.xp-ratio, .xp-ratio-badge { display: none; }
+
+/* Percentage beside the views count, with a 2px meter underneath it */
+:root.xp-ratioMeter .xp-ratio {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 6px;
+  padding-bottom: 1px;
+  color: var(--xp-ratio-ink);
+  font: 500 12.5px/1 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: default;
+}
+:root.xp-ratioMeter [data-xp-ratio-slot] {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.xp-ratio-meter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--xp-ratio-track);
+  overflow: hidden;
+}
+.xp-ratio-meter i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 2px;
+  border-radius: inherit;
+  background: var(--xp-ratio-fill);
+}
+.xp-ratio[data-level="hot"] { color: var(--xp-ratio-hot); }
+.xp-ratio[data-level="ratioed"] { color: var(--xp-ratio-bad); }
+.xp-ratio[data-level="hot"] .xp-ratio-meter i { background: var(--xp-ratio-hot); }
+.xp-ratio[data-level="ratioed"] .xp-ratio-meter i { background: var(--xp-ratio-bad); }
+
+/* Badge at the end of the header line */
+:root.xp-ratioMeter .xp-ratio-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  flex-shrink: 0;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font: 700 11px/1 "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: default;
+}
+.xp-ratio-badge[data-level="hot"] { color: var(--xp-ratio-hot); background: var(--xp-ratio-hot-bg); }
+.xp-ratio-badge[data-level="ratioed"] { color: var(--xp-ratio-bad); background: var(--xp-ratio-bad-bg); }
+
+/* Very narrow action bars: drop the percentage so the bar never crowds.
+   Measured on the action bar itself (a full-width row, so containment is safe). */
+:root.xp-ratioMeter [role="group"]:has(.xp-ratio) { container-type: inline-size; }
+@container (max-width: 340px) {
+  .xp-ratio { display: none !important; }
+}
