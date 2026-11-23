@@ -9,14 +9,14 @@ No account, no server, no tracking. Everything runs in your browser.
 
 ## Why install it
 
-- **Share posts as gorgeous images.** One click turns any post into a polished card with six backgrounds,
-  ready to copy into a chat, a slide deck or another post.
+- **Share posts as gorgeous images.** One click turns any post (reposts and quote posts included) into a
+  polished card with six backgrounds, then post it to X directly, copy it or download it.
 - **See your day at a glance.** A "Last 24 hours" summary sits above your notifications, and you can share it
   as an image.
 - **Know who's who instantly.** Gold ring for people you follow, green for people who follow you, both for
   mutuals, plus your own colour labels for anyone.
 - **Spot bots and fresh accounts.** "New · 12d" and "Possible bot" tags on replies, and account age on profiles.
-- **Read the room.** A ratio meter shows every post's engagement rate, with "Hot" and "Ratioed" badges.
+- **Read the room.** A ratio meter shows every post's engagement rate, and flags "Hot" and "Ratioed" posts.
 - **Never get spoiled.** Blur posts that mention words you choose until you click Show.
 - **Focus when you need to.** Alt+Shift+F hides the sidebar, counts and clutter.
 - **Live stock prices and real profiles inline.** `$NVDA` becomes a price pill; `@mentions` show the person's
@@ -26,11 +26,11 @@ No account, no server, no tracking. Everything runs in your browser.
 
 | | |
 |---|---|
-| ![Share modal](docs/screenshots/share-modal.png) | **Share as image.** Live preview, six backgrounds (Light, Dark, Midnight, Sunset, Ocean, Paper), optional metrics and watermark, copy or download as PNG. |
+| ![Share modal](docs/screenshots/share-modal.png) | **Share as image.** Live preview, six backgrounds (Light, Dark, Midnight, Sunset, Ocean, Paper), optional metrics and watermark. Handles reposts, quoted posts, up to four photos and videos. **Post to X** attaches the image to a new post for you; or copy or download the PNG. |
 | ![Notifications summary](docs/screenshots/notifications-summary.png) | **Notifications summary.** Likes, followers, reposts and mentions for the last 24 hours, an hourly activity chart, your top post and new followers. Cached locally, so it opens instantly. |
 | ![Follow rings and labels](docs/screenshots/follow-rings-and-labels.png) | **Follow rings and labels.** Rings and tags show your relationship with every author. Label anyone with a colour and a short tag. |
 | ![Badges](docs/screenshots/badges.png) | **Stock and profile badges.** `$TICKER` pills with logo and live price; `@mention` chips with photo, name and verified badge. |
-| ![Ratio meter](docs/screenshots/ratio-meter.png) | **Ratio meter.** Engagement rate next to the view count, plus "Hot" and "Ratioed" badges. |
+| ![Ratio meter](docs/screenshots/ratio-meter.png) | **Ratio meter.** A small pill after the time: the engagement rate, or "Hot" / "Ratioed" when a post is taking off or getting ratioed. X's own buttons are left untouched. |
 | ![Account age](docs/screenshots/account-age.png) | **Account age and bot signals.** "New" tags on young accounts, "Possible bot" only when several signals stack up, and a "Joined · posts/day" line on profiles. |
 | ![Spoiler shield](docs/screenshots/spoiler-shield.png) | **Spoiler shield.** Posts with your chosen words are blurred, text and media, until you click Show. |
 | ![Hover card](docs/screenshots/hover-card.png) | **Polished profile hover card.** Glass surface, a thin metal edge with a slow glint, compact stats. |
