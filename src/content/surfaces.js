@@ -30,7 +30,16 @@ const xpSurfaces = (() => {
   function notification(article) {
     if (article.hasAttribute("data-xp-notif")) return;
     article.setAttribute("data-xp-notif", "");
+    detectUnread(article);
+  }
 
+  function detectUnread(article) {
+    // X's own hover grey would read as an unread tint; check once the
+    // pointer has left the row.
+    if (article.matches(":hover")) {
+      article.addEventListener("pointerleave", () => requestAnimationFrame(() => detectUnread(article)), { once: true });
+      return;
+    }
     const pageBg = getComputedStyle(document.body).backgroundColor;
     for (let n = article, i = 0; n && i < 4; n = n.parentElement, i++) {
       const bg = getComputedStyle(n).backgroundColor;

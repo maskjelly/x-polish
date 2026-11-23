@@ -12,6 +12,7 @@
   --xp-panel-fill: rgba(15, 20, 25, 0.02);
   --xp-row-hover: rgba(15, 20, 25, 0.04);
   --xp-unread: rgba(29, 155, 240, 0.06);
+  --xp-unread-hover: rgba(29, 155, 240, 0.1);
   --xp-focus-border: rgba(29, 155, 240, 0.55);
 }
 :root.xp-dark {
@@ -19,6 +20,7 @@
   --xp-panel-fill: rgba(255, 255, 255, 0.025);
   --xp-row-hover: rgba(255, 255, 255, 0.045);
   --xp-unread: rgba(29, 155, 240, 0.08);
+  --xp-unread-hover: rgba(29, 155, 240, 0.13);
   --xp-focus-border: rgba(29, 155, 240, 0.6);
 }
 
@@ -55,6 +57,15 @@
   background-color: var(--xp-row-hover) !important;
 }
 
+:root.xp-sidebarPanels [data-xp-panel] [data-testid="trend"]:focus-visible,
+:root.xp-sidebarPanels [data-xp-panel] [data-testid="UserCell"]:focus-visible,
+:root.xp-sidebarPanels [data-xp-panel] a[href^="/explore/tabs/"]:focus-visible,
+:root.xp-sidebarPanels [data-xp-panel] a[href^="/i/connect_people"]:focus-visible,
+:root.xp-sidebarPanels [data-xp-panel] a[href^="/i/trends"]:focus-visible {
+  outline: 2px solid var(--xp-focus-border);
+  outline-offset: -2px;
+}
+
 /* ---- Post composer -------------------------------------------------------- */
 /* No fill of our own: X's inner layers paint the page colour, so a fill here
    showed as a mismatched rectangle. The hairline + padding make the panel. */
@@ -68,6 +79,14 @@
 }
 :root.xp-composerPolish [data-xp-composer]:focus-within {
   border-color: var(--xp-focus-border);
+}
+/* In the reply / compose dialog the dialog is already the container: no
+   second box inside it. */
+:root.xp-composerPolish [role="dialog"] [data-xp-composer] {
+  margin: 0;
+  padding: 0;
+  border-color: transparent;
+  border-radius: 0;
 }
 /* The panel replaces X's divider lines inside and around the composer */
 :root.xp-composerPolish [data-xp-composer] [data-testid="toolBar"] {
@@ -95,4 +114,11 @@
 }
 :root.xp-notifPolish [data-xp-notif][data-xp-unread] {
   background-color: var(--xp-unread) !important;
+}
+:root.xp-notifPolish [data-xp-notif][data-xp-unread]:hover {
+  background-color: var(--xp-unread-hover) !important;
+}
+:root.xp-notifPolish [data-xp-notif]:focus-visible {
+  outline: 2px solid var(--xp-focus-border);
+  outline-offset: -2px;
 }

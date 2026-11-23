@@ -1,9 +1,10 @@
 /* ==========================================================================
    Profile hover card.
 
-   One clean frame: flat surface, a single soft elevation, and a thin metal
-   edge with a slow glint (the one effect asked for). Everything inside the
-   card (photo, name, bio, counts, buttons) stays exactly as X renders it.
+   Outer frame only (no double edge): glass body with a subtle corner glow,
+   a thin metal edge with a slow glint, one light sweep behind the content
+   when the card opens, compact one-row stat pills, a light gloss on the
+   Follow button and a soft lift under the photo.
    Only profile cards are styled, not cashtag cards.
    ========================================================================== */
 
@@ -27,9 +28,11 @@
     0 1px 2px rgba(15, 20, 25, 0.06),
     0 14px 36px -12px rgba(15, 20, 25, 0.22);
   /* Metal edge: soft silver with a brighter glint */
-  --xp-metal-base: rgba(15, 20, 25, 0.14);
-  --xp-metal-mid: rgba(140, 152, 165, 0.55);
-  --xp-metal-glint: rgba(255, 255, 255, 1);
+  /* Light: a white glint vanishes on a white page, so the highlight is a
+     darker polished-steel tone that reads as a reflection on light surfaces. */
+  --xp-metal-base: rgba(15, 20, 25, 0.13);
+  --xp-metal-mid: rgba(120, 134, 150, 0.45);
+  --xp-metal-glint: rgba(84, 99, 116, 0.85);
 }
 :root.xp-dark {
   --xp-hc-bg: #101215;
@@ -137,6 +140,12 @@
   text-decoration: none !important;
   transition: background-color 120ms ease;
 }
+:root.xp-profileCards [data-xp-hovercard] a[href$="/following"]:focus-visible,
+:root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"]:focus-visible,
+:root.xp-profileCards [data-xp-hovercard] a[href$="/followers"]:focus-visible {
+  outline: 2px solid rgba(29, 155, 240, 0.6);
+  outline-offset: 1px;
+}
 :root.xp-profileCards [data-xp-hovercard] a[href$="/following"]:hover,
 :root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"]:hover,
 :root.xp-profileCards [data-xp-hovercard] a[href$="/followers"]:hover {
@@ -144,10 +153,13 @@
 }
 
 /* Follow / Following button: light gloss on X's own colour (filled button only) */
-:root.xp-profileCards [data-xp-hovercard] [data-testid$="-follow"],
-:root.xp-profileCards [data-xp-hovercard] [data-testid$="-unfollow"] {
+:root.xp-profileCards [data-xp-hovercard] [data-testid$="-follow"] {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 60%) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+/* Outlined "Following" button: the gloss only, no lift (it isn't a filled button) */
+:root.xp-profileCards [data-xp-hovercard] [data-testid$="-unfollow"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 60%) !important;
 }
 
 @keyframes xp-sheen { to { translate: 320% 0; } }
