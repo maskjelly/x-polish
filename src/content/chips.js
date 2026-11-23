@@ -70,6 +70,16 @@ const xpChips = (() => {
     }
   }
 
+  function compact(n, currency) {
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency", currency, notation: "compact", maximumFractionDigits: 2,
+      }).format(n);
+    } catch {
+      return String(n);
+    }
+  }
+
   function cashtag(link) {
     const ticker = (link.textContent || "").trim().replace(/^\$/, "").toUpperCase();
     if (!/^[A-Z0-9.]{1,12}$/.test(ticker)) return;
@@ -91,16 +101,22 @@ const xpChips = (() => {
       price.textContent = formatPrice(q);
       const dir = q.changePct == null ? "flat" : q.changePct >= 0 ? "up" : "down";
       price.classList.add(`xp-${dir}`);
-      const pct = q.changePct == null ? "" : ` · ${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}% today`;
-      link.title = `${q.name} (${q.symbol}) ${formatPrice(q)}${pct}`;
+      const pct = q.changePct == null ? "" : ` · ${q.changePct >= 0 ? "+" : ""}${q.changePct.toFixed(2)}% 24h`;
+      const cap = q.marketCap ? ` · ${compact(q.marketCap, q.currency)} MC` : "";
+      const exch = q.exchange ? ` · ${q.exchange}` : "";
+      link.title = `${q.name} (${q.symbol}) ${formatPrice(q)}${pct}${cap}${exch}`;
 
-      xpApi.logo(q.symbol).then((src) => {
-        if (!src) return;
+      const showLogo = (src, onFail) => {
+        if (!src) return onFail?.();
         const img = el("img", "xp-logo");
         img.alt = "";
-        img.src = src;
+        img.referrerPolicy = "no-referrer";
         img.onload = () => logo.replaceWith(img);
-      });
+        img.onerror = () => onFail?.();
+        img.src = src;
+      };
+      const fallbackLogo = () => xpApi.logo(q.symbol).then((src) => showLogo(src));
+      showLogo(q.logo, fallbackLogo); // X's logo first, then financialmodelingprep
     });
   }
 

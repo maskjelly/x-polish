@@ -36,6 +36,7 @@
       "js": [
         "src/settings.js",
         "src/content/selectors.js",
+        "src/content/xapi.js",
         "src/content/api.js",
         "src/content/chips.js",
         "src/content/content.js"

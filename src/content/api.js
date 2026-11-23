@@ -54,8 +54,18 @@ const xpApi = (() => {
     return domProfiles.get(handle.toLowerCase()) || request("profile", handle);
   }
 
+  // Prices: X's own data first (same as its hover cards), Yahoo as fallback.
+  const quoteMemo = new Map(); // ticker -> { t, p }
+  function quote(ticker) {
+    const hit = quoteMemo.get(ticker);
+    if (hit && Date.now() - hit.t < MEMO_TTL.quote) return hit.p;
+    const p = xpX.quote(ticker).then((q) => q || request("quote", ticker));
+    quoteMemo.set(ticker, { t: Date.now(), p });
+    return p;
+  }
+
   return {
-    quote: (ticker) => request("quote", ticker),
+    quote,
     logo: (symbol) => request("logo", symbol),
     profile,
     harvestAuthor,

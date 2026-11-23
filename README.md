@@ -20,6 +20,7 @@ src/
   settings.js          toggle list + defaults (shared by popup and content script)
   content/
     selectors.js       stable X selectors (data-testid), all in one place
+    xapi.js            X's internal GraphQL API (same requests x.com makes)
     api.js             content-side data layer (messages background, harvests on-page profiles)
     chips.js           $cashtag and @mention badges
     content.js         applies settings as <html> classes, tags tweets as they load
@@ -41,7 +42,9 @@ icons/
 ## Badges
 
 - `$TICKER` becomes a round pill with logo, ticker and live price (green up / red down, hover for % change).
-  Prices: Yahoo Finance (falls back to `TICKER-USD` for crypto). Logos: financialmodelingprep.
+  Prices + logos come from X itself (`smartTagHoverCardQuery`, the same request as X's cashtag hover card),
+  sent from the x.com tab with your session. If that fails (logged out, rate limited, X changed the query id
+  in `src/content/xapi.js`), it falls back to Yahoo Finance + financialmodelingprep via the background worker.
 - `@user` becomes a square chip with avatar, display name and verified badge (blue / gold / grey).
   Profiles come from tweets already on the page first, otherwise from api.fxtwitter.com.
 - All network calls go through `src/background.js` (x.com's CSP blocks them from the page) and are cached:
