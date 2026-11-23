@@ -1,0 +1,194 @@
+/* ==========================================================================
+   People: follow rings, tags, post tint, custom labels, label editor.
+   ========================================================================== */
+
+:root {
+  --xp-gold: #d4a42a;     /* you follow them */
+  --xp-green: #22a55b;    /* they follow you */
+  --xp-c-red: #ef4444;
+  --xp-c-orange: #f97316;
+  --xp-c-yellow: #eab308;
+  --xp-c-green: #22c55e;
+  --xp-c-teal: #14b8a6;
+  --xp-c-blue: #3b82f6;
+  --xp-c-purple: #a855f7;
+  --xp-c-pink: #ec4899;
+  --xp-c-gray: #94a3b8;
+  --xp-page: #ffffff;
+  --xp-tint: 7%;
+}
+:root.xp-dark {
+  --xp-gold: #e6b93a;
+  --xp-green: #2fc46d;
+  --xp-page: #000000;
+  --xp-tint: 9%;
+}
+
+/* Colour per kind -> --xp-pc */
+[data-xp-ring="following"], [data-xp-hl="following"], .xp-ptag[data-kind="following"] { --xp-pc: var(--xp-gold); }
+[data-xp-ring="followed"],  [data-xp-hl="followed"],  .xp-ptag[data-kind="followed"]  { --xp-pc: var(--xp-green); }
+[data-xp-ring="mutual"],    [data-xp-hl="mutual"]                                      { --xp-pc: var(--xp-green); }
+[data-xp-ring="c-red"],    [data-xp-hl="c-red"],    .xp-ptag[data-kind="c-red"]    { --xp-pc: var(--xp-c-red); }
+[data-xp-ring="c-orange"], [data-xp-hl="c-orange"], .xp-ptag[data-kind="c-orange"] { --xp-pc: var(--xp-c-orange); }
+[data-xp-ring="c-yellow"], [data-xp-hl="c-yellow"], .xp-ptag[data-kind="c-yellow"] { --xp-pc: var(--xp-c-yellow); }
+[data-xp-ring="c-green"],  [data-xp-hl="c-green"],  .xp-ptag[data-kind="c-green"]  { --xp-pc: var(--xp-c-green); }
+[data-xp-ring="c-teal"],   [data-xp-hl="c-teal"],   .xp-ptag[data-kind="c-teal"]   { --xp-pc: var(--xp-c-teal); }
+[data-xp-ring="c-blue"],   [data-xp-hl="c-blue"],   .xp-ptag[data-kind="c-blue"]   { --xp-pc: var(--xp-c-blue); }
+[data-xp-ring="c-purple"], [data-xp-hl="c-purple"], .xp-ptag[data-kind="c-purple"] { --xp-pc: var(--xp-c-purple); }
+[data-xp-ring="c-pink"],   [data-xp-hl="c-pink"],   .xp-ptag[data-kind="c-pink"]   { --xp-pc: var(--xp-c-pink); }
+[data-xp-ring="c-gray"],   [data-xp-hl="c-gray"],   .xp-ptag[data-kind="c-gray"]   { --xp-pc: var(--xp-c-gray); }
+
+/* ---- Avatar ring ---------------------------------------------------------- */
+/* Follow rings only when that setting is on; custom-label rings when labels are on */
+:root.xp-peopleRings [data-testid^="UserAvatar-Container-"][data-xp-ring]:not([data-xp-ring^="c-"]),
+:root.xp-customLabels [data-testid^="UserAvatar-Container-"][data-xp-ring^="c-"] {
+  border-radius: 50%;
+  outline: 2px solid var(--xp-pc);
+  outline-offset: 2px;
+}
+/* Mutual: gold ring inside the green one */
+:root.xp-peopleRings [data-testid^="UserAvatar-Container-"][data-xp-ring="mutual"] {
+  box-shadow: 0 0 0 2px var(--xp-gold);
+  outline-offset: 2px;
+}
+
+/* ---- Tag attached to the bottom of the ring (tweets) ---------------------- */
+.xp-ptag { display: none; }
+:root.xp-peopleRings .xp-ptag[data-kind="followed"],
+:root.xp-customLabels .xp-ptag[data-kind^="c-"] {
+  display: block;
+}
+.xp-ptag:not(.xp-ptag-inline) {
+  position: absolute;
+  top: 35px;             /* 40px avatar, overlaps the ring's bottom edge */
+  left: 20px;
+  translate: -50% 0;
+  z-index: 1;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.xp-ptag {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: var(--xp-pc);
+  color: #fff;
+  font: 700 9.5px/1.1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.01em;
+  box-shadow: 0 0 0 2px var(--xp-page); /* cut-out so it sits cleanly on the ring */
+}
+.xp-ptag[data-kind="c-yellow"], .xp-ptag[data-kind="c-gray"] { color: #111; }
+.xp-ptag[hidden] { display: none !important; }
+
+/* ---- Post tint ------------------------------------------------------------- */
+:root.xp-peopleRings article[data-xp-hl]:not([data-xp-hl^="c-"]),
+:root.xp-customLabels article[data-xp-hl^="c-"] {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--xp-pc) var(--xp-tint), transparent),
+    transparent 70%
+  ) !important;
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--xp-pc) 70%, transparent);
+}
+
+/* ---- Label button --------------------------------------------------------- */
+.xp-label-btn { display: none; }
+:root.xp-customLabels .xp-label-btn {
+  display: inline-grid;
+  place-items: center;
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  border-radius: 6px;
+  color: rgb(113, 118, 123);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+:root.xp-customLabels article:hover .xp-label-btn,
+:root.xp-customLabels .xp-label-btn:focus-visible,
+:root.xp-customLabels .xp-label-btn-text { opacity: 1; }
+:root.xp-customLabels .xp-label-btn:hover {
+  background: rgba(29, 155, 240, 0.1);
+  color: rgb(29, 155, 240);
+}
+.xp-label-btn svg { width: 15px; height: 15px; }
+
+/* Profile page row: tag + "Label" button under the name */
+.xp-profile-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.xp-profile-row .xp-ptag-inline { font-size: 11px; padding: 3px 8px; box-shadow: none; }
+:root.xp-customLabels .xp-label-btn-text {
+  display: inline-flex;
+  gap: 5px;
+  width: auto;
+  height: 24px;
+  padding: 0 9px;
+  margin-left: 0;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 999px;
+  font: 600 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---- Editor popover --------------------------------------------------------- */
+.xp-editor {
+  position: fixed;
+  z-index: 2147483000;
+  width: 248px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 20, 25, 0.1);
+  background: #fff;
+  color: #0f1419;
+  box-shadow: 0 12px 32px -8px rgba(15, 20, 25, 0.25);
+  font: 14px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.xp-dark .xp-editor {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: #16181c;
+  color: #e7e9ea;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.8);
+}
+.xp-editor[hidden] { display: none; }
+.xp-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.xp-editor-title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xp-editor button { font: inherit; cursor: pointer; }
+.xp-editor-x {
+  width: 24px; height: 24px; border: 0; border-radius: 6px;
+  background: transparent; color: inherit; opacity: 0.6; font-size: 18px; line-height: 1;
+}
+.xp-editor-x:hover { opacity: 1; background: rgba(127, 127, 127, 0.15); }
+.xp-editor-swatches { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: 10px; }
+.xp-swatch {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+.xp-swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--xp-page, #fff), 0 0 0 4px var(--sw); }
+.xp-dark .xp-swatch[aria-checked="true"] { box-shadow: 0 0 0 2px #16181c, 0 0 0 4px var(--sw); }
+.xp-editor-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+.xp-editor-input:focus { border-color: #1d9bf0; }
+.xp-editor-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+.xp-editor-actions button {
+  height: 30px; padding: 0 14px; border-radius: 999px; font-weight: 600;
+}
+.xp-editor-remove { border: 1px solid rgba(127, 127, 127, 0.3); background: transparent; color: #f4212e; }
+.xp-editor-remove[hidden] { display: none; }
+.xp-editor-save { border: 0; background: #0f1419; color: #fff; }
+.xp-dark .xp-editor-save { background: #eff3f4; color: #0f1419; }
+.xp-editor-save:disabled { opacity: 0.4; cursor: default; }

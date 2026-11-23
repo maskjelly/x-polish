@@ -66,17 +66,17 @@
   function cleanEntries(entries) {
     const kept = [];
     for (const entry of entries) {
+      // Filter module items first so one ad doesn't remove a whole mixed module.
+      const items = entry?.content?.items;
+      if (Array.isArray(items)) {
+        const cleaned = items.filter((item) => !isPromoted(item));
+        removed += items.length - cleaned.length;
+        if (items.length > 0 && cleaned.length === 0) continue; // module was all ads
+        entry.content.items = cleaned;
+      }
       if (isPromoted(entry)) {
         removed++;
         continue;
-      }
-      // Modules (e.g. a row of suggested users) need their items filtered too.
-      const items = entry?.content?.items;
-      if (Array.isArray(items)) {
-        const filtered = items.filter((item) => !isPromoted(item?.item ?? item));
-        removed += items.length - filtered.length;
-        if (items.length > 0 && filtered.length === 0) continue; // module was all ads
-        entry.content.items = filtered;
       }
       kept.push(entry);
     }

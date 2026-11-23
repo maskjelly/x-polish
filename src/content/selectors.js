@@ -19,6 +19,7 @@ const XP_SEL = {
   composerToolbar: '[data-testid="toolBar"]',
   composerText: '[data-testid^="tweetTextarea_"]',
   notification: 'article[data-testid="notification"]',
+  profileName: '[data-testid="primaryColumn"] [data-testid="UserName"]',
   // Classic client testid, and the new client's popup classes (Tailwind).
   hoverCard: '[data-testid="HoverCard"], [class~="w-[320px]"][class~="min-h-[130px]"]',
 };

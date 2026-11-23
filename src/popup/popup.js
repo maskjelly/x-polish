@@ -21,3 +21,31 @@ xpLoadSettings().then((settings) => {
   }
   container.classList.toggle("off", !settings.enabled);
 });
+
+// ---- My labels -----------------------------------------------------------
+const list = document.getElementById("people-list");
+const empty = document.getElementById("people-empty");
+const hex = Object.fromEntries(XP_LABEL_COLORS.map((c) => [c.id, c.hex]));
+
+function renderPeople() {
+  xpLabels.loadAll().then((map) => {
+    list.textContent = "";
+    empty.hidden = map.size > 0;
+    const people = [...map.values()].sort((a, b) => a.handle.localeCompare(b.handle));
+    for (const p of people) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="dot"></span><a target="_blank" rel="noopener"></a><span class="tag"></span><button aria-label="Remove label">×</button>`;
+      li.querySelector(".dot").style.background = hex[p.color] || "#999";
+      const a = li.querySelector("a");
+      a.href = `https://x.com/${encodeURIComponent(p.handle)}`;
+      a.textContent = `@${p.handle}`;
+      li.querySelector(".tag").textContent = p.text || "";
+      li.querySelector("button").addEventListener("click", () => xpLabels.remove(p.handle));
+      list.appendChild(li);
+    }
+  });
+}
+renderPeople();
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && Object.keys(changes).some((k) => k.startsWith(XP_LABEL_PREFIX))) renderPeople();
+});

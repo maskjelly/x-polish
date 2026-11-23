@@ -17,9 +17,11 @@ After editing files, hit the reload icon on the extension card and refresh x.com
 manifest.json
 src/
   background.js        network requests + caching (quotes, logos, profiles)
+  labels.js            custom people labels (storage + colour palette), shared with the popup
   settings.js          toggle list + defaults (shared by popup and content script)
   page/
     adblock.js         MAIN-world filter: removes promoted entries from X's API responses
+    hook.js            MAIN-world reader: collects follows-you / you-follow flags
   content/
     selectors.js       stable X selectors (data-testid), all in one place
     xapi.js            X's internal GraphQL API (same requests x.com makes)
@@ -27,7 +29,8 @@ src/
     ads.js             DOM fallback: marks promoted tweets, trends and users
     chips.js           $cashtag and @mention badges
     hovercard.js       finds the profile hover card
-    relations.js       "Follows you" / "You follow" pills on tweets
+    people.js          follow rings, tags, post tint, label buttons
+    label-editor.js    popover for setting a person's colour + tag
     surfaces.js        marks sidebar boxes, the composer, notification rows; tracks the current page
     dom.js             shared helpers (find the element that draws a box, mark it)
     content.js         applies settings as <html> classes, tags tweets as they load
@@ -36,10 +39,8 @@ src/
     tweets.css         tweet styling
     chips.css          badge styling
     hovercard.css      profile hover card styling (also defines the shared metal/glass tokens)
-    relations.css      relationship pill styling
+    people.css         rings, tags, tint, label editor
     surfaces.css       sidebar boxes, post composer, notifications (flat, hairline style)
-  page/
-    hook.js            runs in X's page context; reads relationship flags from X's API responses
   popup/               toolbar popup, built from settings.js
 icons/
 ```
@@ -83,11 +84,14 @@ Base UI popup) and marks the box that paints it with `data-xp-hovercard`. `src/s
 brushed-metal border (rotating conic gradient masked to a ring), a one-time light sweep on open, a glass body,
 stat pills and glossy buttons. Cashtag hover cards are left alone.
 
-## Follows you / You follow
+## People: follow rings and labels
 
-`src/page/hook.js` runs in the page's own JS world and reads (never changes) X's API responses, collecting
-`following` / `followed_by` for every user X loads. `src/content/relations.js` receives that map and adds a small
-pill under the author's name on each tweet. No extra requests are made.
+- Avatar ring everywhere: gold = you follow them, green = they follow you, gold inside green = mutual.
+- Tweets get a small "Follows you" tag on the ring and a faint tint in the same colour.
+- Your own labels (colour + optional tag) override the follow colours. Set them from the tag icon that
+  appears next to the name when you hover a post, or the "Label" button on a profile. Manage them in the popup.
+- Relationship flags come from X's own API responses, read by `src/page/hook.js` (page world). Labels are
+  stored in `chrome.storage.sync` as `lbl:<handle>`.
 
 ## Adding a feature
 

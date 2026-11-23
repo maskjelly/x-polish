@@ -53,7 +53,9 @@
     { selector: XP_SEL.sidebarSection, run: xpSurfaces.sidebarPanel },
     { selector: XP_SEL.composerToolbar, run: xpSurfaces.composer },
     { selector: XP_SEL.notification, run: xpSurfaces.notification },
-    { selector: `${XP_SEL.tweet} ${XP_SEL.userName}`, run: xpRelations.badge },
+    { selector: xpPeople.AVATAR, run: xpPeople.avatar },
+    { selector: XP_SEL.tweet, run: xpPeople.tweet },
+    { selector: XP_SEL.profileName, run: xpPeople.profileHeader },
   ];
 
   function scan(node = document) {
