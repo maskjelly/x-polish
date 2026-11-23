@@ -125,6 +125,8 @@ const xpChips = (() => {
     const text = (link.textContent || "").trim();
     const m = HANDLE_RE.exec(link.getAttribute("href") || "");
     if (!m || !text.startsWith("@")) return;
+    // Never the name / @handle line of a profile or card, only mentions in text.
+    if (link.closest('[data-testid="UserName"], [data-testid="User-Name"]')) return;
     const handle = m[1];
     const inner = prepare(link, "mention");
     if (!inner) return;

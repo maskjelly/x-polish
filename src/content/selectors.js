@@ -13,8 +13,9 @@ const XP_SEL = {
   adRows: '[data-testid="trend"], [data-testid="UserCell"]',
   sidebar: '[data-testid="sidebarColumn"]',
   primaryColumn: '[data-testid="primaryColumn"]',
-  cashtag: '[data-testid="tweetText"] a[href*="cashtag_click"]',
-  mention: '[data-testid="tweetText"] a[href^="/"]',
+  // Badges apply to post text and to bios (profile page and hover card).
+  cashtag: '[data-testid="tweetText"] a[href*="cashtag_click"], [data-testid="UserDescription"] a[href*="cashtag_click"]',
+  mention: '[data-testid="tweetText"] a[href^="/"], [data-testid="UserDescription"] a[href^="/"]',
   sidebarSection: '[data-testid="sidebarColumn"] section, [data-testid="sidebarColumn"] aside',
   composerToolbar: '[data-testid="toolBar"]',
   composerText: '[data-testid^="tweetTextarea_"]',
