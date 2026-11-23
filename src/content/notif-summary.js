@@ -33,7 +33,7 @@ const xpNotifSummary = (() => {
   const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 
   const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
-  const hourFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric" });
+  const hourFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
   const plural = (n, k) => `${n.toLocaleString()} ${n === 1 ? k.one : k.many}`;
 
   function esc(s) {

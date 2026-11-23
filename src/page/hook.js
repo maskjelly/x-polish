@@ -38,7 +38,34 @@
   // NotificationsTimeline) into compact events:
   //   { id, type: like|repost|follow|reply|mention|other, ts, count,
   //     users: [{ handle, name, avatar }], target: { id, text } | null }
-  const ICON_TYPE = { heart_icon: "like", retweet_icon: "repost", person_icon: "follow" };
+  // Notification type from the icon name (any spelling X uses), falling back
+  // to the message text when the icon is missing or unfamiliar.
+  function notifType(icon, text) {
+    const i = String(icon?.id ?? icon ?? "").toLowerCase();
+    if (/heart|like/.test(i)) return "like";
+    if (/retweet|repost/.test(i)) return "repost";
+    if (/person|follow/.test(i)) return "follow";
+    const t = String(text || "").toLowerCase();
+    if (/\bliked\b/.test(t)) return "like";
+    if (/\b(reposted|retweeted)\b/.test(t)) return "repost";
+    if (/\bfollowed you\b/.test(t)) return "follow";
+    return "other";
+  }
+
+  // Timestamp from any field X uses; entry sortIndex as a last resort (for
+  // notification timelines it is the notification time in ms).
+  function plausibleMs(n) {
+    return Number.isFinite(n) && n > 1.2e12 && n < 4e12 ? n : NaN;
+  }
+  function notifTime(o, entrySort) {
+    for (const v of [o.timestamp_ms, o.timestampMs, o.timestamp, o.created_at, o.sort_index]) {
+      if (v == null) continue;
+      const n = typeof v === "number" || /^\d+$/.test(v) ? Number(v) : Date.parse(v);
+      const ms = plausibleMs(n < 1e11 ? n * 1000 : n); // seconds -> ms
+      if (Number.isFinite(ms)) return ms;
+    }
+    return plausibleMs(Number(entrySort));
+  }
 
   function actorCount(text, shown) {
     const m = /and ([\d,.]+)([KkMm]?) others?/.exec(text || "");
@@ -110,8 +137,8 @@
         const tid = agg.targetObjects?.[0]?.tweet?.id;
         events.push({
           id: "n" + n.id,
-          type: ICON_TYPE[n.icon?.id] || "other",
-          ts: Number(n.timestampMs),
+          type: notifType(n.icon, n.message?.text),
+          ts: notifTime(n),
           count: actorCount(n.message?.text, from.length),
           users: from.slice(0, 8),
           target: tid && tweets[tid] ? { id: tid, text: tweets[tid].full_text || tweets[tid].text || "" } : null,
@@ -136,27 +163,32 @@
       return events;
     }
 
-    // GraphQL: walk for timeline items
-    const stack = [json];
+    // GraphQL: walk for timeline items, carrying each entry's sortIndex down.
+    const stack = [[json, null]];
     let guard = 0;
     while (stack.length && guard++ < 200000) {
-      const o = stack.pop();
+      const [o, sort] = stack.pop();
       if (!o || typeof o !== "object") continue;
-      if (Array.isArray(o)) { for (const v of o) stack.push(v); continue; }
-      if (o.itemType === "TimelineNotification") {
-        const from = (o.template?.from_users || []).map(gqlUser).filter(Boolean);
-        const target = gqlTweet(o.template?.target_objects?.[0]);
+      if (Array.isArray(o)) { for (const v of o) stack.push([v, sort]); continue; }
+      const entrySort = o.entryId && o.sortIndex != null ? o.sortIndex : sort;
+      const kind = o.itemType || o.__typename;
+
+      if (kind === "TimelineNotification" || (o.notification_icon && (o.rich_message || o.message))) {
+        const text = o.rich_message?.text ?? o.message?.text ?? "";
+        const tpl = o.template || {};
+        const from = (tpl.from_users || tpl.aggregate_user_actions?.from_users || []).map(gqlUser).filter(Boolean);
+        const target = gqlTweet((tpl.target_objects || [])[0]);
         events.push({
-          id: "n" + o.id,
-          type: ICON_TYPE[o.notification_icon] || "other",
-          ts: Number(o.timestamp_ms),
-          count: actorCount(o.rich_message?.text, from.length),
+          id: "n" + (o.id ?? o.entryId ?? text + entrySort),
+          type: notifType(o.notification_icon ?? o.icon, text),
+          ts: notifTime(o, entrySort),
+          count: actorCount(text, from.length),
           users: from.slice(0, 8),
           target: target ? { id: target.id, text: target.text } : null,
         });
         continue;
       }
-      if (o.itemType === "TimelineTweet") {
+      if (kind === "TimelineTweet" && o.tweet_results) {
         const t = gqlTweet(o.tweet_results);
         const authorId = t?.legacy.user_id_str || null;
         if (t && aboutMe(t.legacy, authorId, me, feed)) {
@@ -171,7 +203,7 @@
         }
         continue;
       }
-      for (const k in o) { const v = o[k]; if (v && typeof v === "object") stack.push(v); }
+      for (const k in o) { const v = o[k]; if (v && typeof v === "object") stack.push([v, entrySort]); }
     }
     return events;
   }
@@ -184,6 +216,8 @@
     try {
       const feed = notifFeed(url || "");
       if (feed) {
+        lastNotifResponses.unshift({ url, feed, json, at: Date.now() });
+        lastNotifResponses.length = Math.min(lastNotifResponses.length, 3);
         const events = parseNotifications(json, feed).filter((e) => Number.isFinite(e.ts));
         noteNotifPage(json, events, url, feed);
         if (events.length) window.postMessage({ source: "xp-hook", type: "notifications", events }, location.origin);
@@ -192,6 +226,37 @@
       }
     } catch {}
   }
+
+  // ---- Diagnostics -------------------------------------------------------------
+  // In the browser console on x.com/notifications, run __xpNotifDebug() to see
+  // how each notification X sent was read. Shows structure only: types,
+  // icons, timestamps and the first words of each message.
+  const lastNotifResponses = [];
+  window.__xpNotifDebug = () => {
+    const rows = [];
+    for (const r of lastNotifResponses) {
+      const parsed = new Map(parseNotifications(r.json, r.feed).map((e) => [e.id, e]));
+      const stack = [r.json];
+      let guard = 0;
+      while (stack.length && guard++ < 100000) {
+        const o = stack.pop();
+        if (!o || typeof o !== "object") continue;
+        if (o.itemType || o.notification_icon || o.icon?.id) {
+          rows.push({
+            feed: r.feed,
+            kind: o.itemType || o.__typename || "v2",
+            icon: String(o.notification_icon?.id ?? o.notification_icon ?? o.icon?.id ?? ""),
+            tsFields: ["timestamp_ms", "timestampMs", "timestamp", "sort_index"].filter((k) => o[k] != null).join(",") || "-",
+            text: String(o.rich_message?.text ?? o.message?.text ?? "").slice(0, 40),
+            readAs: (parsed.get("n" + o.id) || parsed.get("t" + (o.tweet_results?.result?.rest_id ?? "")))?.type || "(skipped)",
+          });
+        }
+        for (const k in o) { const v = o[k]; if (v && typeof v === "object") stack.push(v); }
+      }
+    }
+    console.table(rows);
+    return `${rows.length} items from ${lastNotifResponses.length} responses (${lastNotifResponses.map((r) => r.url.split("?")[0].split("/").pop()).join(", ")})`;
+  };
 
   // ---- Backfill: load older notification pages until we cover 24 hours --------
   // Replays X's own "All notifications" request with the bottom cursor, like
