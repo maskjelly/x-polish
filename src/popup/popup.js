@@ -5,10 +5,10 @@
 
 const GROUPS = [
   { title: "Badges", keys: ["cashtagBadges", "mentionBadges"] },
-  { title: "People", keys: ["peopleRings", "customLabels", "profileCards"] },
-  { title: "Posts", keys: ["noteGlimmer", "sponsoredRing", "blockAds", "hideMetrics", "tweetCards", "roundedMedia", "betterType"] },
+  { title: "People", keys: ["peopleRings", "customLabels", "accountAge", "profileCards"] },
+  { title: "Posts", keys: ["shareImage", "ratioMeter", "spoilerShield", "noteGlimmer", "sponsoredRing", "blockAds", "hideMetrics", "tweetCards", "roundedMedia", "betterType"] },
   { title: "Notifications", keys: ["notifSummary", "notifPolish"] },
-  { title: "Layout", keys: ["sidebarPanels", "composerPolish", "hideSidebar"] },
+  { title: "Layout", keys: ["focusMode", "sidebarPanels", "composerPolish", "hideSidebar"] },
 ];
 
 // Shorter wording inside a section (the heading already gives context).
@@ -27,6 +27,11 @@ const SHORT = {
   notifPolish: "Polished rows",
   sidebarPanels: "Sidebar boxes",
   composerPolish: "Post composer",
+  shareImage: "Share post as image",
+  ratioMeter: "Ratio meter",
+  accountAge: "Account age & new-account tags",
+  spoilerShield: "Spoiler shield",
+  focusMode: "Focus mode (Alt+Shift+F)",
 };
 
 const container = document.getElementById("toggles");

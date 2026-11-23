@@ -97,7 +97,18 @@ async function loadProfile(handle) {
 }
 
 // ---- Messaging --------------------------------------------------------------
+// X images (avatars, media) as data: URLs, so a canvas that draws them stays
+// exportable. Only X's own image hosts are allowed.
+async function loadImage(url) {
+  const u = new URL(url);
+  if (!/^(pbs|abs)\.twimg\.com$/.test(u.hostname)) return null;
+  const res = await fetch(u.href);
+  if (!res.ok) throw new Error(`image ${res.status}`);
+  return toDataUrl(res);
+}
+
 const HANDLERS = {
+  image: (url) => cached(`i:${url}`, 10 * 60 * 1000, false, () => loadImage(url)),
   quote: (t) => cached(`q:${t}`, TTL.quote, false, () => loadQuote(t)),
   logo: (s) => cached(`l:${s}`, TTL.logo, true, () => loadLogo(s)),
   profile: (h) => cached(`p:${h}`, TTL.profile, true, () => loadProfile(h)),

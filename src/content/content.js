@@ -56,6 +56,11 @@
     { selector: xpPeople.AVATAR, run: xpPeople.avatar },
     { selector: XP_SEL.tweet, run: xpPeople.tweet },
     { selector: XP_SEL.tweet, run: xpPaid.tweet },
+    { selector: XP_SEL.tweet, run: xpShare.tweet },
+    { selector: XP_SEL.tweet, run: xpRatio.tweet },
+    { selector: XP_SEL.tweet, run: xpAccounts.tweet },
+    { selector: XP_SEL.profileName, run: xpAccounts.profile },
+    { selector: XP_SEL.tweet, run: xpShield.tweet },
     { selector: XP_SEL.profileName, run: xpPeople.profileHeader },
   ];
 

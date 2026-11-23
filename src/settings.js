@@ -19,6 +19,11 @@ const XP_SETTINGS = [
   { key: "sponsoredRing",  label: "Gold ring on sponsored & paid posts", default: true },
   { key: "blockAds",       label: "Block ads (Promoted)",     default: true },
   { key: "hideSidebar",    label: "Hide right sidebar",       default: false },
+  { key: "shareImage",     label: "Share post as image",      default: true },
+  { key: "ratioMeter",     label: "Ratio meter",              default: true },
+  { key: "accountAge",     label: "Account age & bot signals", default: true },
+  { key: "spoilerShield",  label: "Spoiler shield",           default: true },
+  { key: "focusMode",      label: "Focus mode",               default: false },
 ];
 
 const XP_DEFAULTS = Object.fromEntries(XP_SETTINGS.map((s) => [s.key, s.default]));

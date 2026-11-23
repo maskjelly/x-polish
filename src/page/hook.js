@@ -5,7 +5,9 @@
 (() => {
   const API = /\/(i\/api\/)?graphql\/|\/i\/api\/|api\.x\.com\/|api\.twitter\.com\//;
 
-  function collect(json) {
+  // Walks a response for User objects. Returns relationship flags per handle,
+  // and fills `accounts` with public account facts (age, counts, avatar state).
+  function collect(json, accounts = {}) {
     const out = {};
     const stack = [json];
     let guard = 0;
@@ -23,6 +25,19 @@
         const followedBy = rp.followed_by ?? o.legacy?.followed_by;
         if (handle && (typeof following === "boolean" || typeof followedBy === "boolean")) {
           out[handle.toLowerCase()] = { following: !!following, followedBy: !!followedBy };
+        }
+        const created = Date.parse(o.core?.created_at || o.legacy?.created_at || "");
+        if (handle && Number.isFinite(created)) {
+          const l = o.legacy || {};
+          accounts[handle.toLowerCase()] = {
+            handle,
+            createdAt: created,
+            posts: l.statuses_count ?? null,
+            followers: l.followers_count ?? null,
+            following: l.friends_count ?? null,
+            defaultAvatar: !!(l.default_profile_image || /default_profile/.test(o.avatar?.image_url || l.profile_image_url_https || "")),
+            verified: !!(o.is_blue_verified || o.verification?.verified || l.verified),
+          };
         }
       }
       for (const k in o) {
@@ -210,8 +225,11 @@
 
   function publish(json, url) {
     try {
-      const users = collect(json);
+      const accounts = {};
+      const users = collect(json, accounts);
       if (Object.keys(users).length) window.postMessage({ source: "xp-hook", type: "relations", users }, location.origin);
+      // Public account facts for account-age / new-account signals.
+      if (Object.keys(accounts).length) window.postMessage({ source: "xp-hook", type: "accounts", accounts }, location.origin);
     } catch {}
     try {
       const feed = notifFeed(url || "");

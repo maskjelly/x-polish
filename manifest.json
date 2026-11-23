@@ -16,7 +16,9 @@
     "https://twitter.com/*",
     "https://query1.finance.yahoo.com/*",
     "https://financialmodelingprep.com/*",
-    "https://api.fxtwitter.com/*"
+    "https://api.fxtwitter.com/*",
+    "https://pbs.twimg.com/*",
+    "https://abs.twimg.com/*"
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
@@ -35,7 +37,12 @@
         "src/styles/hovercard.css",
         "src/styles/surfaces.css",
         "src/styles/people.css",
-        "src/styles/notif-summary.css"
+        "src/styles/notif-summary.css",
+        "src/styles/share.css",
+        "src/styles/ratio.css",
+        "src/styles/accounts.css",
+        "src/styles/shield.css",
+        "src/styles/focus.css"
       ],
       "js": [
         "src/settings.js",
@@ -52,6 +59,11 @@
         "src/content/people.js",
         "src/content/notif-summary.js",
         "src/content/paid.js",
+        "src/content/share.js",
+        "src/content/ratio.js",
+        "src/content/accounts.js",
+        "src/content/shield.js",
+        "src/content/focus.js",
         "src/content/content.js"
       ],
       "run_at": "document_start"
