@@ -91,3 +91,44 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(90, 60, 10, 0.3);
   pointer-events: none;
 }
+
+/* ---- Community Notes: a soft light sweep every few seconds ---------------- */
+:root.xp-noteGlimmer [data-testid="birdwatch-pivot"] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+:root.xp-noteGlimmer [data-testid="birdwatch-pivot"]::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 38%;
+  z-index: 1;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    var(--xp-glimmer) 50%,
+    transparent 100%
+  );
+  translate: -140% 0;
+  rotate: 0deg;
+  transform: skewX(-16deg);
+  animation: xp-note-glimmer 6s cubic-bezier(0.35, 0.1, 0.25, 1) 0.6s infinite;
+  pointer-events: none;
+}
+/* Light: a faint blue sheen (white is invisible on the note's light fill). */
+:root { --xp-glimmer: rgba(29, 155, 240, 0.13); }
+:root.xp-dark { --xp-glimmer: rgba(255, 255, 255, 0.16); }
+
+/* Sweep takes ~1.3s, then rests for the remainder of the cycle */
+@keyframes xp-note-glimmer {
+  0%   { translate: -140% 0; }
+  22%  { translate: 360% 0; }
+  100% { translate: 360% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="birdwatch-pivot"]::after { animation: none !important; display: none; }
+}
