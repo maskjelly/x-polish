@@ -2,13 +2,13 @@
 // Add a new toggle here and it shows up in the popup automatically.
 const XP_SETTINGS = [
   { key: "enabled",        label: "Enable X Polish",          default: true },
-  { key: "tweetCards",     label: "Card-style tweets",        default: true },
-  { key: "roundedMedia",   label: "Rounded media",            default: true },
+  { key: "tweetCards",     label: "Card-style tweets",        default: false },
+  { key: "roundedMedia",   label: "Rounded media",            default: false },
   { key: "cashtagBadges",  label: "Stock badges ($TICKER)",   default: true },
   { key: "mentionBadges",  label: "Profile badges (@user)",   default: true },
-  { key: "betterType",     label: "Nicer typography",         default: true },
+  { key: "betterType",     label: "Nicer typography",         default: false },
   { key: "hideMetrics",    label: "Hide view counts",         default: false },
-  { key: "hidePromoted",   label: "Hide promoted tweets",     default: true },
+  { key: "hidePromoted",   label: "Hide promoted tweets",     default: false },
   { key: "hideSidebar",    label: "Hide right sidebar",       default: false },
 ];
 
