@@ -57,10 +57,20 @@ const xpPeople = (() => {
     return found;
   }
 
+  // Ring weight follows the photo size: xs <= 24px, s <= 36px, l >= 80px.
+  function sizeClass(px) {
+    if (!px) return null;
+    if (px <= 24) return "xs";
+    if (px <= 36) return "s";
+    if (px >= 80) return "l";
+    return null;
+  }
+
   function avatar(el) {
     const look = lookFor(handleOfAvatar(el));
     setAttr(el, "data-xp-ring", look?.ring ?? null);
     if (!look) return;
+    setAttr(el, "data-xp-avsize", sizeClass(el.offsetWidth));
     const shape = shapeOf(el);
     if (shape && !shape.hasAttribute("data-xp-avshape")) xpDom.mark(shape, "avshape");
   }
@@ -86,15 +96,43 @@ const xpPeople = (() => {
       }
       if (tag.textContent !== look.tag) tag.textContent = look.tag;
       tag.dataset.kind = look.tagKind;
+      // Hang the tag off the photo's real bottom edge (sizes vary by layout).
+      // Layout offsets, not screen rects, so page zoom/scaling can't shift it.
+      const bottom = offsetWithin(avatarEl, col);
+      if (bottom != null) tag.style.setProperty("--xp-tag-top", `${bottom - 7}px`);
     } else {
       tag?.remove();
     }
 
     // Label button in the header (shown on hover)
     const header = article.querySelector(XP_SEL.userName);
-    if (header && !header.querySelector(":scope > .xp-label-btn")) {
-      header.appendChild(labelButton(handle));
+    if (header) {
+      const btn = header.querySelector(":scope > .xp-label-btn") || header.appendChild(labelButton(handle));
+      syncButton(btn, handle);
     }
+  }
+
+  // Bottom edge of `el` measured from the top of `ancestor` (a positioned box).
+  function offsetWithin(el, ancestor) {
+    if (!el.offsetHeight) return null;
+    let y = 0;
+    for (let n = el; n && n !== ancestor; n = n.offsetParent) {
+      if (!ancestor.contains(n)) return null;
+      y += n.offsetTop;
+    }
+    return y + el.offsetHeight;
+  }
+
+  // An already-labelled person: the button wears the label colour and says so.
+  function syncButton(btn, handle) {
+    const l = labels.get(handle.toLowerCase());
+    setAttr(btn, "data-labelled", l ? "" : null);
+    setAttr(btn, "data-xp-hl", l ? `c-${l.color}` : null);
+    const name = l ? "Edit label" : "Label this person";
+    btn.setAttribute("aria-label", name);
+    btn.title = name;
+    const text = btn.querySelector("span");
+    if (text) text.textContent = l ? "Edit label" : "Label";
   }
 
   // ---- Profile page header: tag + label button next to the name -------------
@@ -109,7 +147,9 @@ const xpPeople = (() => {
       row.firstChild.className = "xp-ptag xp-ptag-inline";
       el.appendChild(row);
     }
-    row.querySelector(".xp-label-btn").dataset.handle = handle;
+    const btn = row.querySelector(".xp-label-btn");
+    btn.dataset.handle = handle;
+    syncButton(btn, handle);
     const look = lookFor(handle);
     const tag = row.firstChild;
     tag.hidden = !look?.tag;
@@ -147,8 +187,26 @@ const xpPeople = (() => {
     document.addEventListener(t, onButton, true);
   }
 
+  // ---- Page colour ------------------------------------------------------------------
+  // The ring's separator line and the tag cut-out use --xp-page. Take it from
+  // X's real background so Dim (dark blue) matches as well as Light / Lights out.
+  function syncPageColour() {
+    if (!document.body) return;
+    const bg = getComputedStyle(document.body).backgroundColor;
+    if (bg && !/rgba\([^)]*,\s*0\)$/.test(bg) && bg !== "transparent") {
+      document.documentElement.style.setProperty("--xp-page", bg);
+    }
+  }
+  function watchPageColour() {
+    syncPageColour();
+    new MutationObserver(syncPageColour).observe(document.body, { attributes: true, attributeFilter: ["style", "class"] });
+  }
+  if (document.body) watchPageColour();
+  else document.addEventListener("DOMContentLoaded", watchPageColour, { once: true });
+
   // ---- Refresh -------------------------------------------------------------------
   function refreshAll() {
+    syncPageColour();
     document.querySelectorAll(AVATAR).forEach(avatar);
     document.querySelectorAll(XP_SEL.tweet).forEach(tweet);
     document.querySelectorAll(XP_SEL.profileName).forEach(profileHeader);
