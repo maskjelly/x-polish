@@ -16,6 +16,13 @@
 :root {
   --xp-hc-radius: 18px;
   --xp-hc-bg: #ffffff;
+  --xp-hc-bg-top: #ffffff;
+  --xp-hc-bg-bottom: #f5f7f9;
+  --xp-hc-glow: rgba(29, 155, 240, 0.10);
+  --xp-hc-stat-bg: rgba(15, 20, 25, 0.04);
+  --xp-hc-stat-border: rgba(15, 20, 25, 0.08);
+  --xp-hc-stat-hover: rgba(15, 20, 25, 0.07);
+  --xp-hc-sheen: rgba(29, 155, 240, 0.07);
   --xp-hc-shadow:
     0 1px 2px rgba(15, 20, 25, 0.06),
     0 14px 36px -12px rgba(15, 20, 25, 0.22);
@@ -26,6 +33,13 @@
 }
 :root.xp-dark {
   --xp-hc-bg: #101215;
+  --xp-hc-bg-top: #181b20;
+  --xp-hc-bg-bottom: #0d0f12;
+  --xp-hc-glow: rgba(29, 155, 240, 0.16);
+  --xp-hc-stat-bg: rgba(255, 255, 255, 0.05);
+  --xp-hc-stat-border: rgba(255, 255, 255, 0.09);
+  --xp-hc-stat-hover: rgba(255, 255, 255, 0.09);
+  --xp-hc-sheen: rgba(255, 255, 255, 0.10);
   --xp-hc-shadow:
     0 1px 2px rgba(0, 0, 0, 0.5),
     0 16px 40px -12px rgba(0, 0, 0, 0.75);
@@ -38,7 +52,9 @@
 :root.xp-profileCards [data-xp-hovercard]:has(a[href$="/following"], a[href$="/verified_followers"], a[href$="/followers"], img[src*="profile_images"]) {
   border: 0 !important;
   border-radius: var(--xp-hc-radius) !important;
-  background: var(--xp-hc-bg) !important;
+  background:
+    radial-gradient(110% 60% at 0% 0%, var(--xp-hc-glow), transparent 60%),
+    linear-gradient(180deg, var(--xp-hc-bg-top), var(--xp-hc-bg-bottom)) !important;
   box-shadow: var(--xp-hc-shadow) !important;
   overflow: hidden;
   isolation: isolate;
@@ -79,6 +95,62 @@
   pointer-events: none;
 }
 
+/* Sheen: one soft diagonal sweep of light across the surface when the card opens */
+:root.xp-profileCards [data-xp-hovercard]:has(a[href$="/following"], a[href$="/verified_followers"], a[href$="/followers"], img[src*="profile_images"])::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 40%;
+  z-index: -1; /* behind the content, above the card surface: text never dims */
+  background: linear-gradient(105deg, transparent 0%, var(--xp-hc-sheen) 50%, transparent 100%);
+  translate: -140% 0;
+  transform: skewX(-12deg);
+  animation: xp-sheen 1000ms 120ms cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+/* Profile photo: soft lift that follows round and square photos */
+:root.xp-profileCards [data-xp-hovercard] [data-testid^="UserAvatar-Container"] {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+}
+
+/* Following / Followers: compact pills, side by side on one row */
+:root.xp-profileCards [data-xp-hovercard] div:has(> a[href$="/following"]),
+:root.xp-profileCards [data-xp-hovercard] div:has(> a[href$="/verified_followers"]),
+:root.xp-profileCards [data-xp-hovercard] div:has(> a[href$="/followers"]) {
+  margin-right: 6px !important;
+}
+:root.xp-profileCards [data-xp-hovercard] a[href$="/following"],
+:root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"],
+:root.xp-profileCards [data-xp-hovercard] a[href$="/followers"] {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--xp-hc-stat-border);
+  background: var(--xp-hc-stat-bg);
+  font-size: 13.5px;
+  white-space: nowrap;
+  text-decoration: none !important;
+  transition: background-color 120ms ease;
+}
+:root.xp-profileCards [data-xp-hovercard] a[href$="/following"]:hover,
+:root.xp-profileCards [data-xp-hovercard] a[href$="/verified_followers"]:hover,
+:root.xp-profileCards [data-xp-hovercard] a[href$="/followers"]:hover {
+  background: var(--xp-hc-stat-hover);
+}
+
+/* Follow / Following button: light gloss on X's own colour (filled button only) */
+:root.xp-profileCards [data-xp-hovercard] [data-testid$="-follow"],
+:root.xp-profileCards [data-xp-hovercard] [data-testid$="-unfollow"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 60%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+@keyframes xp-sheen { to { translate: 320% 0; } }
 @keyframes xp-glint { to { --xp-glint: 360deg; } }
 @keyframes xp-hc-in {
   /* translate/scale (not transform) so we never fight the popup's positioning */
@@ -88,4 +160,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-xp-hovercard], [data-xp-hovercard]::before { animation: none !important; }
+  [data-xp-hovercard]::after { display: none; }
 }
