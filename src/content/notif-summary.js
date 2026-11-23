@@ -12,6 +12,8 @@ const xpNotifSummary = (() => {
   let panel = null;
   let collapsed = false;
   let model = null; // last computed summary, used by the tooltip
+  // Loading older pages (see backfill in src/page/hook.js)
+  const fill = { running: false, done: false, error: null, lastAsk: 0 };
 
   // Fixed order: also the stacking order (bottom -> top) and legend order.
   const KINDS = [
@@ -182,9 +184,16 @@ const xpNotifSummary = (() => {
       : "Quiet day. Nothing new in the last 24 hours.";
 
     const hours = Math.max(1, Math.round(m.coverage / HOUR));
-    const note = m.coverage < DAY - HOUR
-      ? `Based on the last ${hours}h loaded so far. Scroll the list to load more.`
-      : `Based on ${m.loaded.toLocaleString()} loaded notifications.`;
+    const full = m.coverage >= DAY - HOUR;
+    const note = fill.running
+      ? `<span class="xp-ns-spinner" aria-hidden="true"></span>Loading earlier activity…`
+      : full
+      ? `Covers the full 24 hours · ${m.loaded.toLocaleString()} notifications`
+      : fill.error
+      ? `Covers the last ${hours}h. Couldn't load older notifications (${esc(fill.error)}).`
+      : fill.done
+      ? `Covers the last ${hours}h. X returned no older notifications.`
+      : `Covers the last ${hours}h so far.`;
 
     panel.innerHTML = `
       <header class="xp-ns-head">
@@ -265,6 +274,16 @@ const xpNotifSummary = (() => {
     render();
   }
 
+  // Ask the page script to load older pages until the last 24h are covered.
+  // Also covers the case where X showed the list from memory (no request seen).
+  function maybeBackfill() {
+    if (fill.running || Date.now() - fill.lastAsk < 60_000) return;
+    const covered = events.size && Date.now() - Math.min(...[...events.values()].map((e) => e.ts)) >= DAY - HOUR;
+    if (covered) return;
+    fill.lastAsk = Date.now();
+    window.postMessage({ source: "xp-cs", type: "notif-backfill" }, location.origin);
+  }
+
   // Keep the panel directly above the notifications list while on that page.
   function ensure() {
     if (!/^\/notifications(\/|$)/.test(location.pathname)) { panel?.remove(); return; }
@@ -272,11 +291,20 @@ const xpNotifSummary = (() => {
     if (!list?.parentElement) return;
     if (!panel) build();
     if (panel.nextElementSibling !== list) list.parentElement.insertBefore(panel, list);
+    maybeBackfill();
   }
 
   let queued = false;
   window.addEventListener("message", (e) => {
-    if (e.source !== window || e.data?.source !== "xp-hook" || e.data.type !== "notifications") return;
+    if (e.source !== window || e.data?.source !== "xp-hook") return;
+    if (e.data.type === "notif-backfill") {
+      fill.running = e.data.state === "running";
+      fill.done = e.data.state === "done";
+      fill.error = e.data.error || null;
+      render();
+      return;
+    }
+    if (e.data.type !== "notifications") return;
     for (const ev of e.data.events || []) events.set(ev.id, ev);
     if (queued) return;
     queued = true;

@@ -235,7 +235,19 @@ a.xp-ns-card:focus-visible { outline: 2px solid var(--xp-ns-follow); outline-off
 }
 .xp-ns-follower-names b { color: var(--xp-ns-ink); font-weight: 600; }
 
-.xp-ns-note { margin-top: 12px !important; color: var(--xp-ns-ink-3); font-size: 12px; }
+.xp-ns-note {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 12px !important;
+  color: var(--xp-ns-ink-3); font-size: 12px;
+}
+.xp-ns-spinner {
+  width: 10px; height: 10px; flex-shrink: 0;
+  border: 1.5px solid var(--xp-ns-line);
+  border-top-color: var(--xp-ns-ink-2);
+  border-radius: 50%;
+  animation: xp-ns-spin 0.8s linear infinite;
+}
+@keyframes xp-ns-spin { to { rotate: 360deg; } }
 
 /* ---- Tooltip ------------------------------------------------------------------- */
 .xp-ns-tip {
