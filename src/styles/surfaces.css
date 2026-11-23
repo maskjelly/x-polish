@@ -56,11 +56,14 @@
 }
 
 /* ---- Post composer -------------------------------------------------------- */
+/* No fill of our own: X's inner layers paint the page colour, so a fill here
+   showed as a mismatched rectangle. The hairline + padding make the panel. */
 :root.xp-composerPolish [data-xp-composer] {
-  margin: 8px 12px;
+  margin: 10px 16px 8px;
+  padding: 12px 12px 10px;
   border: 1px solid var(--xp-hairline);
   border-radius: var(--xp-panel-radius);
-  background: var(--xp-panel-fill);
+  background: transparent;
   transition: border-color 150ms ease;
 }
 :root.xp-composerPolish [data-xp-composer]:focus-within {
